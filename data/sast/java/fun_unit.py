@@ -2,6 +2,7 @@
 from treelib import Tree
 from util.setting import log
 from util.data_structure import Stack
+from typing import Tuple, List
 
 class FunUnit():
     """Maintain data for each function (e.g., file_name, func_name, parameter_num)
@@ -41,7 +42,28 @@ class FunUnit():
             current_node = stack.pop()
             _node_data = self.sast.get_node(current_node).data
             current_node_type = _node_data.node_type
+            current_node_type = current_node_type.strip('\n').replace(',', ' ')
             sequence.append(current_node_type)
+            children = self.sast.children(current_node)
+            children.reverse()
+            for child in children:
+                stack.push(child.identifier)
+        
+        return sequence
+
+
+    def gen_token_sequence(self) -> list:
+        sequence = list()
+        root = self.sast.root
+
+        stack = Stack()
+        stack.push(root)
+
+        while not stack.is_empty():
+            current_node = stack.pop()
+            _node_data = self.sast.get_node(current_node).data
+            current_node_token = _node_data.node_token
+            sequence.append(current_node_token)
             children = self.sast.children(current_node)
             children.reverse()
             for child in children:
@@ -57,3 +79,49 @@ class FunUnit():
             return True
         
         return False
+
+    def gen_identifer_token_sequence(self) -> dict:
+        sequence = dict()
+        root = self.sast.root
+
+        stack = Stack()
+        stack.push(root)
+
+        while not stack.is_empty():
+            current_node = stack.pop()
+            _node_data = self.sast.get_node(current_node).data
+            current_node_type = _node_data.node_type
+            current_node_type = current_node_type.strip('\n').replace(',', ' ')
+            current_node_identifier = current_node
+
+            sequence[current_node_identifier] = current_node_type
+            
+            children = self.sast.children(current_node)
+            children.reverse()
+            for child in children:
+                stack.push(child.identifier)
+        return sequence
+
+
+    def gen_ast_edge(self) -> List[List[str]]:
+        """Generate ast edge list from ast list.
+        """
+        src = []
+        tgt = []
+        edge_type = []
+        root = self.sast.root
+        stack = Stack()
+        stack.push(root)
+
+        while not stack.is_empty():
+            current_node = stack.pop()
+            children = self.sast.children(current_node)
+            children.reverse()
+            for child in children:
+                src.append(current_node)
+                tgt.append(child.identifier)
+                edge_type.append('ast')
+                stack.push(child.identifier)
+        
+        return [src, tgt, edge_type]
+
