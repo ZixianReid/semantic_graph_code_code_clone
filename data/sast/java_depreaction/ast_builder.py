@@ -2,8 +2,8 @@ from util.setting import log
 from treelib import Tree
 import tree_sitter
 import uuid
-from data.sast.java.ast_node import ASTNode
-from data.sast.java.query_pattern import JAVA_QUERY
+from data.sast.java_depreaction.ast_node import ASTNode
+from data.sast.java_depreaction.query_pattern import JAVA_QUERY
 from util.data_structure import Queue
 
 def generate_ast_key(file_name: str, func_name: str, parsed_node: tree_sitter.Node) -> str:

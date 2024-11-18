@@ -3,6 +3,7 @@ from treelib import Tree
 from util.setting import log
 from util.data_structure import Stack
 from typing import Tuple, List
+from data.graph_builder.code_graph import EDGE_DICT
 
 class FunUnit():
     """Maintain data for each function (e.g., file_name, func_name, parameter_num)
@@ -120,7 +121,7 @@ class FunUnit():
             for child in children:
                 src.append(current_node)
                 tgt.append(child.identifier)
-                edge_type.append('ast')
+                edge_type.append(EDGE_DICT['ast'])
                 stack.push(child.identifier)
         
         return [src, tgt, edge_type]

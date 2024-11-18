@@ -2,122 +2,149 @@ import argparse
 import json
 import os
 import time
+import torch
+import numpy as np
 from data.data import LoadData
-from util.setting import init_logging, log
+from util.setting import init_logging, log, view_params
 from data.dataset_builder import Dataset
 from nets.load_net import gnn_model
+from train.load_train import trainer
 import torch.optim as optim
 from torch.utils.data import DataLoader
 from tqdm import tqdm
+
 from tensorboardX import SummaryWriter
 
+def gpu_setup(use_gpu, gpu_id):
+    os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+    os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu_id)
 
-def train_val_pipeline(MODEL_NAME, dataset, params, net_params, dirs):
-
-    #dataset loading
-    vocablen, trainset, valset, testset = dataset.vocab_length, dataset.train_data, dataset.val_data, dataset.test_data
-
-
-    device = net_params['device']
-    net_params['vocablen'] = vocablen
-    log.info(f"Vocab length: {vocablen}")
-    log.info(f"Trainset length: {len(trainset)}")
-    log.info(f"Valset length: {len(valset)}")
-    log.info(f"Testset length: {len(testset)}")
+    if torch.cuda.is_available() and use_gpu:
+        print('cuda available with GPU:',torch.cuda.get_device_name(0))
+        device = torch.device("cuda")
+    else:
+        print('cuda not available')
+        device = torch.device("cpu")
+    return device
 
 
-    # model setting
-    log.info("Model setting")
+
+def view_model_param(MODEL_NAME, net_params):
     model = gnn_model(MODEL_NAME, net_params)
-    model.to(device)
+    total_param = 0
+    print("MODEL DETAILS:\n")
+    #print(model)
+    for param in model.parameters():
+        # print(param.data.size())
+        total_param += np.prod(list(param.data.size()))
+    print('MODEL/Total parameters:', MODEL_NAME, total_param)
+    return total_param
 
-    #optmizer and scheduler setting
-    log.info("Optimizer and scheduler setting")
-    optimizer = optim.Adam(model.parameters(), lr=params['init_lr'], weight_decay=params['weight_decay'])
-    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
-                                                     factor=params['lr_reduce_factor'],
-                                                     patience=params['lr_schedule_patience'],
-                                                     verbose=True)
-
-
-    # data loader
-    log.info("Data loader setting")
-    train_loader = DataLoader(trainset, batch_size=params['batch_size'], shuffle=True, collate_fn=dataset.collate)
-    val_loader = DataLoader(valset, batch_size=params['batch_size'], shuffle=False, collate_fn=dataset.collate)
-    test_loader = DataLoader(testset, batch_size=params['batch_size'], shuffle=False, collate_fn=dataset.collate)
-
-    from train.train import train_epoch, evaluate_network
-
-    # start to train
-    log.info("Start to train")
-    try:
-        with tqdm(range(params['epochs'])) as t:
-            for epoch in t:
-                t.set_description('Epoch %d' % epoch)
-
-                start = time.time()
-
-                epoch_train_loss, epoch_train_pre, epoch_train_recall, epoch_train_f1, optimizer = train_epoch(model, optimizer, device, train_loader,
-                                                                           epoch)
-                
-    except KeyboardInterrupt:
-        print('-' * 89)
-        print('Exiting from training early because of KeyboardInterrupt')
-
-
+def create_dirs(dirs):
+    for dir_ in dirs:
+        if not os.path.exists(dir_):
+            os.makedirs(dir_)
 
 def main():
     parser = argparse.ArgumentParser(description='code clone detection')
-    parser.add_argument('-l', '--logging', type=int, default=10,
+    parser.add_argument('-l', '--logging', type=int, default=20,
                         help='Log level [10-50] (default: 10 - Debug)')
-    parser.add_argument('--config')
+    parser.add_argument('--config', default='/home/zixian/PycharmProjects/semantic_graph_code_code_clone/configs/semantic_code_graph_gmm_bcb.json')
+    parser.add_argument('--gpu_id', help="Please give a value for gpu id")
     parser.add_argument('--language')
+    parser.add_argument('--out_dir')
     parser.add_argument('--dataset')
     parser.add_argument('--model')
+    parser.add_argument('--seed')
+    parser.add_argument('--epochs')
+    parser.add_argument('--init_lr')
     parser.add_argument('--batch_size')
-    parser.add_argument('--report', type=str, default="",
+    parser.add_argument('--lr_reduce_factor')
+    parser.add_argument('--lr_schedule_patience')
+    parser.add_argument('--min_lr')
+    parser.add_argument('--weight_decay')
+    parser.add_argument('--print_epoch_interval')
+    parser.add_argument('--max_time')
+    parser.add_argument('--report', type=str, default="clone_bcb_2",
                         help='file name to report training logs.') 
 
     args = parser.parse_args()
-
     with open(args.config) as f:
         config = json.load(f)
-    
-        
-    params = config['params']
-    net_params = config['net_params']
 
-    # initial logger
-    init_logging(args.logging, args.report)
+    # out_dir
+    if args.out_dir is not None:
+        out_dir = args.out_dir
+    else:
+        out_dir = config['out_dir'] 
 
-    # dataset
+
     if args.dataset is not None:
         DATASET_NAME = args.dataset
     else:
-        DATASET_NAME = config['dataset']
+        DATASET_NAME = config['dataset_params']['name']
     
-    dataset = LoadData(DATASET_NAME)
+    LANGUAGE = config['language']
+
     # model
     if args.model is not None:
         MODEL_NAME = args.model
     else:
         MODEL_NAME = config['model']
-    
-    if args.out_dir is not None:
-        out_dir = args.out_dir
-    else:
-        out_dir = config['out_dir']
-
-
-    root_log_dir = out_dir + 'logs/' + MODEL_NAME + "_" + DATASET_NAME + "_GPU" + str(
+    #dirs
+    root_log_dir = out_dir + 'logs/' + MODEL_NAME + "_" + LANGUAGE + DATASET_NAME +  "_GPU" + str(
         config['gpu']['id']) + "_" + time.strftime('%Hh%Mm%Ss_on_%b_%d_%Y')
-    root_ckpt_dir = out_dir + 'checkpoints/' + MODEL_NAME + "_" + DATASET_NAME + "_GPU" + str(
+    root_ckpt_dir = out_dir + 'checkpoints/' + MODEL_NAME + "_" +  LANGUAGE + DATASET_NAME + "_GPU" + str(
         config['gpu']['id']) + "_" + time.strftime('%Hh%Mm%Ss_on_%b_%d_%Y')
-    write_file_name = out_dir + 'results/result_' + MODEL_NAME + "_" + DATASET_NAME + "_GPU" + str(
+    write_file_name = out_dir + 'results/result_' + MODEL_NAME + "_" + LANGUAGE + DATASET_NAME + "_GPU" + str(
         config['gpu']['id']) + "_" + time.strftime('%Hh%Mm%Ss_on_%b_%d_%Y')
-    write_config_file = out_dir + 'configs/config_' + MODEL_NAME + "_" + DATASET_NAME + "_GPU" + str(
+    write_config_file = out_dir + 'configs/config_' + MODEL_NAME + "_" + LANGUAGE + DATASET_NAME + "_GPU" + str(
         config['gpu']['id']) + "_" + time.strftime('%Hh%Mm%Ss_on_%b_%d_%Y')
     dirs = root_log_dir, root_ckpt_dir, write_file_name, write_config_file
+
+    create_dirs(dirs)
+
+    # initial logger
+    init_logging(args.logging, args.report, root_log_dir)
+
+        
+    # device
+    if args.gpu_id is not None:
+        config['gpu']['id'] = int(args.gpu_id)
+        config['gpu']['use'] = True
+    device = gpu_setup(config['gpu']['use'], config['gpu']['id'])
+  
+        
+
+    # paramters setting
+    params = config['params']
+    if args.seed is not None:
+        params['seed'] = int(args.seed)
+    if args.epochs is not None:
+        params['epochs'] = int(args.epochs)
+    if args.batch_size is not None:
+        params['batch_size'] = int(args.batch_size)
+    if args.init_lr is not None:
+        params['init_lr'] = float(args.init_lr)
+    if args.lr_reduce_factor is not None:
+        params['lr_reduce_factor'] = float(args.lr_reduce_factor)
+    if args.lr_schedule_patience is not None:
+        params['lr_schedule_patience'] = int(args.lr_schedule_patience)
+    if args.min_lr is not None:
+        params['min_lr'] = float(args.min_lr)
+    if args.weight_decay is not None:
+        params['weight_decay'] = float(args.weight_decay)
+    if args.print_epoch_interval is not None:
+        params['print_epoch_interval'] = int(args.print_epoch_interval)
+    if args.max_time is not None:
+        params['max_time'] = float(args.max_time)
+
+
+    #network parameters setting
+    net_params = config['net_params']
+    net_params['device'] = device
+    net_params['gpu_id'] = config['gpu']['id']
+    net_params['batch_size'] = params['batch_size']
 
 
     if not os.path.exists(out_dir + 'results'):
@@ -125,9 +152,18 @@ def main():
 
     if not os.path.exists(out_dir + 'configs'):
         os.makedirs(out_dir + 'configs')
-    
-    
-    train_val_pipeline(MODEL_NAME, dataset, params, net_params, dirs)
 
+
+    dataset_params = config['dataset_params']
+
+    # view parameters
+    view_params(params, dataset_params, net_params)
+
+    # dataset
+    dataset = LoadData(LANGUAGE, dataset_params)
+    
+
+    
+    trainer(MODEL_NAME, dataset, params, net_params, dirs)
 
 main()

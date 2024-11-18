@@ -1,7 +1,34 @@
-from data.sast.java.fun_unit import FunUnit
+from data.sast.java_depreaction.fun_unit import FunUnit
 from typing import List, Dict
 from util.setting import log
-from data.graph_builder.code_graph import Code_graph
+from data.graph_builder.code_graph import Code_graph, EDGE_DICT
+
+
+def get_ast_edge(node, nodeindexlist, vocabdict, src, tgt, edgetype):
+    token = node.token
+    nodeindexlist.append([vocabdict[token]])
+    for child in node.children:
+        if not isinstance(child.data, str):
+            src.append(node.id)
+            tgt.append(child.id)
+            edgetype.append([EDGE_DICT['ast_edge']])
+            get_ast_edge(child, nodeindexlist, vocabdict, src, tgt, edgetype)
+        else:
+            get_ast_edge(child, nodeindexlist, vocabdict, src, tgt, edgetype)
+        
+
+def get_value_edge(node, src, tgt, edgetype):
+    token = node.token
+    for child in node.children:
+        if isinstance(child.data, str):
+            src.append(node.id)
+            tgt.append(child.id)
+            edgetype.append([EDGE_DICT['value_edge']])
+            get_value_edge(child, src, tgt, edgetype)
+        else:
+            get_value_edge(child, src, tgt, edgetype)
+
+
 
 def ast_type_dict_generator(ast_list: List[FunUnit]) -> dict:
     """Generate ast type dictionary from ast  ast list.
@@ -46,5 +73,8 @@ def gen_ast_graph(ast_list: List[FunUnit], type_dict: Dict) -> Dict:
         edge[1] =  [indexed_x[key] for key in edge[1] if key in indexed_x]
         output[file_name] = [output_x, edge]
     return output
+
+
+
 
     

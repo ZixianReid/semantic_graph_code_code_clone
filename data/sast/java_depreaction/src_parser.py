@@ -1,9 +1,9 @@
 
 from util.setting import log
-from data.sast.java.ast_parser import ASTParser
-from data.sast.java.query_pattern import JAVA_QUERY
-from data.sast.java.ast_builder import build_func_sast
-from data.sast.java.fun_unit import FunUnit
+from data.sast.java_depreaction.ast_parser import ASTParser
+from data.sast.java_depreaction.query_pattern import JAVA_QUERY
+from data.sast.java_depreaction.ast_builder import build_func_sast
+from data.sast.java_depreaction.fun_unit import FunUnit
 
 
 exclude_type = [",","{",";","}",")","(",'"',"'","`",""," ","[]","[","]",":",".","''","'.'","b", "\\", "'['", "']","''", "comment", "@", "?"]
@@ -28,7 +28,7 @@ def extract_filename(file_path: str) -> str:
     return file_name
 
 
-def java_parser(file_path: str) -> list:
+def java_parser(file_path: str) -> FunUnit:
     """ Parse Java source code file & extract function unit
 
     attributes:
@@ -56,8 +56,9 @@ def java_parser(file_path: str) -> list:
     _methods = query.class_method_query().captures(root_node)
 
     if len(_methods) !=1:
-        print(file_name)
-        log.error('more than one function! exit')
+        pass
+        # print(file_name)
+        # log.error('more than one function! exit')
     else:
         _method = _methods[0]
         _m_name_tmp = query.method_declaration_query().captures(_method[0])

@@ -10,9 +10,11 @@ venv/
 .vscode/
 
 # Ignore the benchmark dataset folder
-/benchmark/dataset/
+/benchmark/
 
 # Ignore the data source folder
 /data/data_source/
 
+
+/out/
 /.conda/

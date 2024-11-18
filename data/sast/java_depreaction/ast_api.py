@@ -2,7 +2,7 @@
 from util.helper import traverse_src_files
 import os
 from util.setting import log
-from data.sast.java.src_parser import java_parser
+from data.sast.java_depreaction.src_parser import java_parser
 
 
 
@@ -22,8 +22,4 @@ def create_ast(file_path: str) -> None:
             exit(-1)
 
     return func_list           
-
-
-        
-
 
