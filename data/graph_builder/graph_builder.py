@@ -77,11 +77,10 @@ def build_graph_visualization(astdict,vocabdict, ast_edge, value_edge, cfg_edge,
             get_value_edge(newtree, edgesrc, edgetgt, edge_attr)
         
         if cfg_edge:
-            pass
             get_cfg_edge(newtree, edgesrc, edgetgt, edge_attr)
         
         if dfg_edge:
-            pass
+           newtree, edgesrc, edgetgt, edge_attr =  get_dfg_edge(newtree, edgesrc, edgetgt, edge_attr)
 
         if if_augument:
             get_if_edge(newtree, edgesrc, edgetgt, edge_attr)

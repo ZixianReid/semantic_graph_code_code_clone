@@ -52,7 +52,7 @@ def get_cfg_edge(node, src, tgt, edgetype):
     elif node_type == 'AssertStatement':
         entrynode, fringe  = cfg_assertstatement(node, src, tgt, edgetype)
     elif node_type == 'ClassDeclaration':
-        entrynode, fringe  = cfg_classdeclaration(node, src, tgt, edgetype)
+        entrynode, fringe  = cfg_methoddeclaration(node, src, tgt, edgetype)
     else:
         entrynode, fringe = None, []
     return entrynode, fringe

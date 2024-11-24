@@ -88,3 +88,5 @@ Image(filename='ast_tree.gv.png')
 
 for pre, fill, node in RenderTree(newtree):
     print("%s%s" % (pre, node.token + "--" + type(node.data).__name__))
+
+

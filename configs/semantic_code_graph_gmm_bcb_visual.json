@@ -16,8 +16,8 @@
         "visualization": true,
         "ast_edge": true,
         "value_edge": true,
-        "cfg_edge": false,
-        "dfg_edge": false,
+        "cfg_edge": true,
+        "dfg_edge": true,
         "if_augument": true,
         "loops_augument": true
     },
