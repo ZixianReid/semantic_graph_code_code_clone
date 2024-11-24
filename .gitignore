@@ -18,3 +18,4 @@ venv/
 
 /out/
 /.conda/
+/.idea/
