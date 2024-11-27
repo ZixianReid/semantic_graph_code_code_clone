@@ -24,16 +24,16 @@
 
     "params": {
         "seed": 41,
-        "epochs": 3,
+        "epochs": 20,
         "batch_size": 32,
-        "init_lr": 0.001,
+        "init_lr": 0.0005,
         "lr_reduce_factor": 0.5,
-        "lr_schedule_patience": 15,
+        "lr_schedule_patience": 2,
         "min_lr": 1e-6,
-        "weight_decay": 0.0,
-        "print_epoch_interval": 2,
-        "save_epoch_interval": 2,
-        "eval_epoch_interval": 2,
+        "weight_decay": 1e-4,
+        "print_epoch_interval": 1,
+        "save_epoch_interval": 1,
+        "eval_epoch_interval": 1,
         "threshold": 0
     },
 

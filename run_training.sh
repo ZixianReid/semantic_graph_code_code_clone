@@ -5,14 +5,53 @@ SCRIPT=$PROJECT_DIR/main.py
 CONFIG_DIR=$PROJECT_DIR/configs/benchmark
 
 # Run the scripts
-echo "Running first configuration: AST_GMN_BCB.json"
 $PYTHON_EXEC $SCRIPT --config $CONFIG_DIR/AST_GMN_BCB.json &
 
 # Wait for 30 minutes (1800 seconds)
 echo "Waiting for 5 minutes before executing the next command..."
-sleep 300
-$PYTHON_EXEC $SCRIPT --config $CONFIG_DIR/AST_VALUE_GMN_BCB.json
+sleep 1200
+$PYTHON_EXEC $SCRIPT --config $CONFIG_DIR/AST_VALUE_BA_GMN_BCB.json &
 
+# Wait for 30 minutes (1800 seconds)
+echo "Waiting for 5 minutes before executing the next command..."
+sleep 1200
+$PYTHON_EXEC $SCRIPT --config $CONFIG_DIR/AST_VALUE_CFG_BA_GMN_BCB.json &
+
+
+# Wait for 30 minutes (1800 seconds)
+echo "Waiting for 5 minutes before executing the next command..."
+sleep 1200
+$PYTHON_EXEC $SCRIPT --config $CONFIG_DIR/AST_VALUE_CFG_DFG_BA_GMN_BCB.json &
+
+
+# Wait for 30 minutes (1800 seconds)
+echo "Waiting for 5 minutes before executing the next command..."
+sleep 1200
+$PYTHON_EXEC $SCRIPT --config $CONFIG_DIR/AST_VALUE_CFG_DFG_GMN_BCB.json &
+
+
+# Wait for 30 minutes (1800 seconds)
+echo "Waiting for 5 minutes before executing the next command..."
+sleep 1200
+$PYTHON_EXEC $SCRIPT --config $CONFIG_DIR/AST_VALUE_CFG_GMN_BCB.json &
+
+
+# Wait for 30 minutes (1800 seconds)
+echo "Waiting for 5 minutes before executing the next command..."
+sleep 1200
+$PYTHON_EXEC $SCRIPT --config $CONFIG_DIR/AST_VALUE_DFG_BA_GMN_BCB.json &
+
+
+# Wait for 30 minutes (1800 seconds)
+echo "Waiting for 5 minutes before executing the next command..."
+sleep 1200
+$PYTHON_EXEC $SCRIPT --config $CONFIG_DIR/AST_VALUE_DFG_GMN_BCB.json &
+
+
+# Wait for 30 minutes (1800 seconds)
+echo "Waiting for 5 minutes before executing the next command..."
+sleep 1200
+$PYTHON_EXEC $SCRIPT --config $CONFIG_DIR/AST_VALUE_GMN_BCB.json &
 
 wait
 echo "Both processes have completed."

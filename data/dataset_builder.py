@@ -95,7 +95,7 @@ class FAJavaDataset(Dataset):
 class SemanticCodeGraphJavaDataset(Dataset):
     def __init__(self, dataset_params):
         super().__init__(dataset_params)
-        files_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data_source/dataset_java_small/')
+        files_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data_source/dataset_java/')
         visualization = dataset_params['visualization']
         dataset = dataset_params['name']
         self.ast_edge = dataset_params['ast_edge']
@@ -135,7 +135,6 @@ class SemanticCodeGraphJavaDataset(Dataset):
 
         log.info("Dataset loaded successfully")
         self.vocab_length = vocabsize
-
 
         
     def get_visualization(self):

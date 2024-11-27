@@ -4,7 +4,7 @@ from util.setting import log
 from data.graph_builder.code_graph import Code_graph, EDGE_DICT
 
 
-def get_ast_edge(node, nodeindexlist, vocabdict, src, tgt, edgetype):
+def get_ast_edge_without_value_edge(node, nodeindexlist, vocabdict, src, tgt, edgetype):
     token = node.token
     nodeindexlist.append([vocabdict[token]])
     for child in node.children:
@@ -12,9 +12,9 @@ def get_ast_edge(node, nodeindexlist, vocabdict, src, tgt, edgetype):
             src.append(node.id)
             tgt.append(child.id)
             edgetype.append([EDGE_DICT['ast_edge']])
-            get_ast_edge(child, nodeindexlist, vocabdict, src, tgt, edgetype)
+            get_ast_edge_without_value_edge(child, nodeindexlist, vocabdict, src, tgt, edgetype)
         else:
-            get_ast_edge(child, nodeindexlist, vocabdict, src, tgt, edgetype)
+            get_ast_edge_without_value_edge(child, nodeindexlist, vocabdict, src, tgt, edgetype)
         
 
 def get_value_edge(node, src, tgt, edgetype):
@@ -28,6 +28,15 @@ def get_value_edge(node, src, tgt, edgetype):
         else:
             get_value_edge(child, src, tgt, edgetype)
 
+
+def get_ast_edge(node, nodeindexlist, vocabdict, src, tgt, edgetype):
+    token = node.token
+    nodeindexlist.append([vocabdict[token]])
+    for child in node.children:
+        src.append(node.id)
+        tgt.append(child.id)
+        edgetype.append([EDGE_DICT['ast_edge']])
+        get_ast_edge(child, nodeindexlist, vocabdict, src, tgt, edgetype)
 
 
 def ast_type_dict_generator(ast_list: List[FunUnit]) -> dict:

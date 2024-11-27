@@ -42,7 +42,7 @@ def add_nodes_edges(graph, node_dict, edgesrc, edgetgt, edge_attr):
         'ast_edge': 'black',
         'value_edge': 'blue',
         'cfg_edge': 'green',
-        'dfg_edge': 'yellow',
+        'dfg_edge': 'pink',
         'if_edge': 'red',
         'ifelse_edge': 'purple',
         'while_edge': 'orange',
@@ -53,7 +53,7 @@ def add_nodes_edges(graph, node_dict, edgesrc, edgetgt, edge_attr):
         0: 'black',
         1: 'blue',
         2: 'green',
-        3: 'yellow',
+        3: 'pink',
         4: 'red',
         5: 'purple',
         6: 'orange',
@@ -61,7 +61,9 @@ def add_nodes_edges(graph, node_dict, edgesrc, edgetgt, edge_attr):
     }
 
     for node_id, node_obj in node_dict.items():
-        graph.node(str(node_id), label=node_obj.token + "-" + str(type(node_obj.data).__name__)  if node_obj.token else 'Unknown')
+
+
+        graph.node(str(node_id), label=node_obj.token + "-" + str(node_id)  if node_obj.token else 'Unknown')
 
     for i in range(len(edgesrc)):
         scr_node = node_dict.get(edgesrc[i])
@@ -86,7 +88,7 @@ from IPython.display import Image
 Image(filename='ast_tree.gv.png')
 
 
-for pre, fill, node in RenderTree(newtree):
-    print("%s%s" % (pre, node.token + "--" + type(node.data).__name__))
+# for pre, fill, node in RenderTree(newtree):
+#     print("%s%s" % (pre, node.token + "--" + type(node.data).__name__))
 
 

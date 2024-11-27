@@ -48,6 +48,7 @@ def split_data_2(graph_dict: dict, labels: list, dataset_name: str):
         elif split_lable == 1:
             test_data.append(Sample(x1, x2, edge_index_1, edge_index_2, edge_attr_1, edge_attr_2, clone_label, dataset_lable, clone_type, similarity_score))
         elif split_lable == 2:
-            val_data.append(Sample(x1, x2, edge_index_1, edge_index_2, edge_attr_1, edge_attr_2, clone_label, dataset_lable, clone_type, similarity_score))
+            if dataset_name=='BigCloneBench' and dataset_lable==0:
+                val_data.append(Sample(x1, x2, edge_index_1, edge_index_2, edge_attr_1, edge_attr_2, clone_label, dataset_lable, clone_type, similarity_score))
 
     return train_data, test_data, val_data

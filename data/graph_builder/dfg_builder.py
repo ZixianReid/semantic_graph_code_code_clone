@@ -68,8 +68,8 @@ def get_dfg_edge(node, src, tgt, edgetype):
         if value.uses == []:
             continue
         for use_var in value.uses:
-            back_tracking(cfg_cpg, key, def_use_chain, use_var)
-
+            flag = back_tracking(cfg_cpg, key, def_use_chain, use_var)
+            # print(str(flag) + value.node_type)
     src, tgt, edgetype = transfer_from_diagraph_2_anynode(cfg_cpg)
     return node, src, tgt, edgetype
 
@@ -97,6 +97,8 @@ def gen_def_use_chain(cfg_cpg, node):
 
 
 def back_tracking(cfg_cpg, node, def_use_chain, use_var):
+    flag = 0
+
     visited = list()
     queue = Queue()
     if node == None:
@@ -114,10 +116,14 @@ def back_tracking(cfg_cpg, node, def_use_chain, use_var):
                     log.error(f"Parent node {_pred} not in def_use_chain")
                     exit(-1)
                 ddg_predecessor = def_use_chain[_pred]
-                if has_dd_rel(use_var, ddg_predecessor):
+                if has_dd_rel(use_var, ddg_predecessor) and not check_dfg_edge(cfg_cpg, ddg_predecessor.node_key, node):
                     cfg_cpg.add_edge(ddg_predecessor.node_key, node, edge_type=[EDGE_DICT['dfg_edge']])
+                    flag = flag + 1
                 else:
                     queue.push(_pred)
+    return flag
+
+        
 def has_dd_rel(use_var: str = None, def_node: DDGNode = None) -> bool:
     """Check whether use_var is defined by def_node.
     """
@@ -140,7 +146,15 @@ def check_edge(cfg_cpg, start, end):
             if edge_type[0][0] == EDGE_DICT['dfg_edge'][0] or edge_type[0][0] == EDGE_DICT['cfg_edge'][0]:
                 return True
     return False
-        
+
+
+def check_dfg_edge(cfg_cpg, start, end):
+    if cfg_cpg.has_edge(start, end):
+        for key, edge_data in cfg_cpg[start][end].items():
+            edge_type = edge_data.get('edge_type', None)
+            if edge_type[0][0] == EDGE_DICT['dfg_edge'][0]:
+                return True
+    return False
 
 def merge_def_use(cfg_cpg, node):
     """Parse one statement node, and traverse its all child entities (non cfg) to collect its def use information and Merge them together.
@@ -279,11 +293,19 @@ def ddg_methodinvocation(cfg_cpg,node):
 def ddg_literal(cfg_cpg,node):
     defs, uses, unknown = [], [], []
     node_successors = list(cfg_cpg.successors(node))
-    if len(node_successors) != 1:
-        log.error(f"Literal node has {len(node_successors)} children, expected 1")
+
+    if len(node_successors) == 0:
+        log.error(f"Literal node has {len(node_successors)} children, expected more than 0")
         exit(-1)
-    _f_def, _f_use, _f_unknown = extract_def_use(cfg_cpg, node_successors[0])
-    uses = uses + _f_def + _f_use + _f_unknown
+    if len(node_successors) == 1:
+        _f_def, _f_use, _f_unknown = extract_def_use(cfg_cpg, node_successors[0])
+        uses = uses + _f_def + _f_use + _f_unknown
+    else:
+        for _succ in node_successors:
+            if cfg_cpg.nodes[_succ]['is_statement']:
+                continue
+            _f_def, _f_use, _f_unknown = extract_def_use(cfg_cpg, _succ)
+            uses = uses + _f_def + _f_use + _f_unknown
     return [defs, uses, unknown]
 
 def ddg_arrayselector(cfg_cpg,node):
@@ -301,7 +323,7 @@ def ddg_classcreator(cfg_cpg,node):
     for _succ in node_successors:
         if cfg_cpg.nodes[_succ]['is_statement']:
             continue
-        _s_def, _s_use, _s_unknown = extract_def_use(_succ)
+        _s_def, _s_use, _s_unknown = extract_def_use(cfg_cpg, _succ)
         uses = uses + _s_def + _s_use + _s_unknown
     return [defs, uses, unknown]
 

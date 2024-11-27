@@ -15,25 +15,25 @@
         "graph_model": "semantic_code_graph",
         "visualization": false,
         "ast_edge": true,
-        "value_edge": true,
-        "cfg_edge": true,
-        "dfg_edge": true,
-        "if_augument": true,
-        "loops_augument": true
+        "value_edge": false,
+        "cfg_edge": false,
+        "dfg_edge": false,
+        "if_augument": false,
+        "loops_augument": false
     },
 
     "params": {
         "seed": 41,
-        "epochs": 7,
+        "epochs": 20,
         "batch_size": 32,
-        "init_lr": 0.001,
+        "init_lr": 0.0005,
         "lr_reduce_factor": 0.5,
-        "lr_schedule_patience": 15,
+        "lr_schedule_patience": 2,
         "min_lr": 1e-6,
-        "weight_decay": 0.0,
-        "print_epoch_interval": 2,
-        "save_epoch_interval": 2,
-        "eval_epoch_interval": 2,
+        "weight_decay": 1e-4,
+        "print_epoch_interval": 1,
+        "save_epoch_interval": 1,
+        "eval_epoch_interval": 1,
         "threshold": 0
     },
 

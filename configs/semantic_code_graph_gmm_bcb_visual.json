@@ -18,8 +18,8 @@
         "value_edge": true,
         "cfg_edge": true,
         "dfg_edge": true,
-        "if_augument": true,
-        "loops_augument": true
+        "if_augument": false,
+        "loops_augument": false
     },
 
     "params": {

@@ -208,7 +208,29 @@ def cfg_dowhilestatement(node, src, tgt, edgetype):
 
 
 def cfg_switchstatement(node, src, tgt, edgetype):
-    return cfg_blockstatement(node, src, tgt, edgetype)
+    node.is_statement = True
+    entrynode = node
+    fringe = [node]
+
+    children = list(node.children)
+    for child in children:
+        _s_entrynode, _s_fringe = get_cfg_edge(child, src, tgt, edgetype)
+        if _s_entrynode is None:
+            continue
+        else:
+            pass
+            src.append(entrynode.id)
+            tgt.append(_s_entrynode.id)
+            edgetype.append([EDGE_DICT['cfg_edge']])
+
+        # for _entrynode in fringe:
+        #     src.append(_entrynode.id)
+        #     tgt.append(_s_entrynode.id)
+        #     edgetype.append([EDGE_DICT['cfg_edge']])
+        fringe = _s_fringe
+    return [entrynode, fringe]
+        
+         
 
 def cfg_switchstatementcase(node, src, tgt, edgetype):
     node.is_statement = True
@@ -308,7 +330,7 @@ def cfg_trystatement(node, src, tgt, edgetype):
 
     try_statemetn_chidlren = list(node.children)
 
-
+    try_block_fringe = []
     try_catch_fringe = []
 
     if len(try_statemetn_chidlren) == 0:
@@ -320,25 +342,34 @@ def cfg_trystatement(node, src, tgt, edgetype):
             continue
         
         _s_entrynode_type = type(_s_entrynode.data).__name__
-        if _s_entrynode_type in BLOCK_TYPE:
+        if _s_entrynode_type != 'CatchClause':
             if len(_s_fringe) == 0:
                 _s_fringe = seek_valid_fringe(_s_entrynode)
                 _s_fringe = [_s_fringe]
             try_catch_fringe += _s_fringe
+            try_block_fringe += _s_fringe
             src.append(entrynode.id)
             tgt.append(_s_entrynode.id)
             edgetype.append([EDGE_DICT['cfg_edge']])
+            fringe = try_block_fringe
         elif _s_entrynode_type == 'CatchClause':
-            for _entrynode in try_catch_fringe:
+            for _entrynode in try_block_fringe:
                 src.append(_entrynode.id)
                 tgt.append(_s_entrynode.id)
                 edgetype.append([EDGE_DICT['cfg_edge']])
+                try_catch_fringe += _s_fringe
             fringe = try_catch_fringe
     return [entrynode, fringe]
     
 
 
 def cfg_catchclause(node, src, tgt, edgetype):
+
+    # # connect end node to the try statement siblings
+    # try_parent = seek_parent(node, ['TryStatement'])
+    # if try_parent:
+    #     next_statement = sek_statement_sibling(try_parent)
+
     node.is_statement = True
     entrynode = node
     children = list(node.children)
@@ -355,6 +386,7 @@ def cfg_catchclause(node, src, tgt, edgetype):
                 tgt.append(_s_entrynode.id)
                 edgetype.append([EDGE_DICT['cfg_edge']])
             fringe = _s_fringe
+
     return [entrynode, fringe]
     
 

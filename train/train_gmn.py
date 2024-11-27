@@ -72,10 +72,78 @@ def evaluation_gmn(model, dataset, params, net_params):
 
 
 
+# def train_gmn(MODEL_NAME, dataset, params, net_params, dirs):
+#     root_log_dir, root_ckpt_dir, write_file_name, write_config_file = dirs
+#     def create_batches(data):
+#         batches = [data[graph:graph+params['batch_size']] for graph in range(0, len(data), params['batch_size'])]
+#         return batches
+
+#     vocablen, trainset, valset, testset = dataset.vocab_length, dataset.train_data, dataset.val_data, dataset.test_data
+#     device = net_params['device']
+#     net_params['vocablen'] = vocablen
+#     log.info(f"Vocab length: {vocablen}")
+#     log.info(f"Trainset length: {len(trainset)}")
+#     log.info(f"Valset length: {len(valset)}")
+#     log.info(f"Testset length: {len(testset)}")
+
+#     # model setting
+#     log.info("Model setting")
+#     model = gnn_model(MODEL_NAME, net_params)
+#     model.to(device)
+
+#     # optimizer
+#     optimizer = optim.Adam(model.parameters(), lr=params['init_lr'])
+
+
+#     # load loss
+#     criterion=nn.CosineEmbeddingLoss()
+#     criterion2=nn.MSELoss()
+
+#     epochs = trange(params['epochs'], leave=True, desc = "Epoch")
+#     for epoch in epochs:
+#         batches = create_batches(trainset)
+#         total_loss=0.0
+#         main_index=0.0
+#         for index, batch in tqdm(enumerate(batches), total=len(batches), desc = "Batches"):
+#             optimizer.zero_grad()
+#             batchloss= 0
+#             for data in batch:
+#                 x1, x2, edge_index1, edge_index2, edge_attr1, edge_attr2, label = data.x1, data.x2, data.edge_index_1, data.edge_index_2, data.edge_attr_1, data.edge_attr_2, data.clone_label
+#                 label = transfer_label(label)
+#                 label=torch.tensor(label, dtype=torch.float, device=device)
+#                 x1=torch.tensor(x1, dtype=torch.long, device=device)
+#                 x2=torch.tensor(x2, dtype=torch.long, device=device)
+#                 edge_index1=torch.tensor(edge_index1, dtype=torch.long, device=device)
+#                 edge_index2=torch.tensor(edge_index2, dtype=torch.long, device=device)
+#                 edge_attr1=torch.tensor(edge_attr1, dtype=torch.long, device=device)
+#                 edge_attr2=torch.tensor(edge_attr2, dtype=torch.long, device=device)
+#                 data=[x1, x2, edge_index1, edge_index2, edge_attr1, edge_attr2]
+#                 prediction=model(data)
+#                 cossim=F.cosine_similarity(prediction[0],prediction[1])
+#                 batchloss=batchloss+criterion2(cossim,label)
+#             batchloss.backward(retain_graph=True)
+#             optimizer.step()
+#             loss = batchloss.item()
+#             total_loss += loss
+#             main_index = main_index + len(batch)
+#             loss=total_loss/main_index
+#             epochs.set_description("Epoch (Loss=%g)" % round(loss,5))
+#         if epoch % params['eval_epoch_interval'] == 0:
+#             log.info(f"start evaluation on valset in epoch: {epoch}")
+#             evaluation_gmn(model, testset, params, net_params)
+#         if epoch % params['save_epoch_interval'] == 0:
+#             log.info(f"Saving model in epoch: {epoch}")
+#             torch.save(model.state_dict(), f"{root_ckpt_dir}/model_{epoch}.pth")
+#     log.info(f"start evaluation on testset in epoch: {epoch}")
+#     evaluation_gmn(model, testset, params, net_params)
+
+
+            
 def train_gmn(MODEL_NAME, dataset, params, net_params, dirs):
     root_log_dir, root_ckpt_dir, write_file_name, write_config_file = dirs
+
     def create_batches(data):
-        batches = [data[graph:graph+params['batch_size']] for graph in range(0, len(data), params['batch_size'])]
+        batches = [data[graph:graph + params['batch_size']] for graph in range(0, len(data), params['batch_size'])]
         return batches
 
     vocablen, trainset, valset, testset = dataset.vocab_length, dataset.train_data, dataset.val_data, dataset.test_data
@@ -86,60 +154,88 @@ def train_gmn(MODEL_NAME, dataset, params, net_params, dirs):
     log.info(f"Valset length: {len(valset)}")
     log.info(f"Testset length: {len(testset)}")
 
-    # model setting
+    # Model setting
     log.info("Model setting")
     model = gnn_model(MODEL_NAME, net_params)
     model.to(device)
 
-    # optimizer
-    optimizer = optim.Adam(model.parameters(), lr=params['init_lr'])
+    # Optimizer
+    optimizer = optim.Adam(model.parameters(), lr=params['init_lr'], weight_decay=params['weight_decay'])
+    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=params['lr_reduce_factor'], patience=params['lr_schedule_patience'], verbose=True)
 
+    # Loss functions
+    criterion = nn.CosineEmbeddingLoss()
+    criterion2 = nn.MSELoss()
 
-    # load loss
-    criterion=nn.CosineEmbeddingLoss()
-    criterion2=nn.MSELoss()
-
-    epochs = trange(params['epochs'], leave=True, desc = "Epoch")
+    epochs = trange(params['epochs'], leave=True, desc="Epoch")
     for epoch in epochs:
+        model.train()  # Set the model to training mode
         batches = create_batches(trainset)
-        total_loss=0.0
-        main_index=0.0
-        for index, batch in tqdm(enumerate(batches), total=len(batches), desc = "Batches"):
+        total_loss = 0.0
+        main_index = 0.0
+
+        for index, batch in tqdm(enumerate(batches), total=len(batches), desc="Batches"):
             optimizer.zero_grad()
-            batchloss= 0
+            batchloss = 0
             for data in batch:
                 x1, x2, edge_index1, edge_index2, edge_attr1, edge_attr2, label = data.x1, data.x2, data.edge_index_1, data.edge_index_2, data.edge_attr_1, data.edge_attr_2, data.clone_label
                 label = transfer_label(label)
-                label=torch.tensor(label, dtype=torch.float, device=device)
-                x1=torch.tensor(x1, dtype=torch.long, device=device)
-                x2=torch.tensor(x2, dtype=torch.long, device=device)
-                edge_index1=torch.tensor(edge_index1, dtype=torch.long, device=device)
-                edge_index2=torch.tensor(edge_index2, dtype=torch.long, device=device)
-                edge_attr1=torch.tensor(edge_attr1, dtype=torch.long, device=device)
-                edge_attr2=torch.tensor(edge_attr2, dtype=torch.long, device=device)
-                data=[x1, x2, edge_index1, edge_index2, edge_attr1, edge_attr2]
-                prediction=model(data)
-                cossim=F.cosine_similarity(prediction[0],prediction[1])
-                batchloss=batchloss+criterion2(cossim,label)
+                label = torch.tensor(label, dtype=torch.float, device=device)
+                x1 = torch.tensor(x1, dtype=torch.long, device=device)
+                x2 = torch.tensor(x2, dtype=torch.long, device=device)
+                edge_index1 = torch.tensor(edge_index1, dtype=torch.long, device=device)
+                edge_index2 = torch.tensor(edge_index2, dtype=torch.long, device=device)
+                edge_attr1 = torch.tensor(edge_attr1, dtype=torch.long, device=device)
+                edge_attr2 = torch.tensor(edge_attr2, dtype=torch.long, device=device)
+                data = [x1, x2, edge_index1, edge_index2, edge_attr1, edge_attr2]
+                prediction = model(data)
+                cossim = F.cosine_similarity(prediction[0], prediction[1])
+                batchloss = batchloss + criterion2(cossim, label)
+            
             batchloss.backward(retain_graph=True)
             optimizer.step()
             loss = batchloss.item()
             total_loss += loss
-            main_index = main_index + len(batch)
-            loss=total_loss/main_index
-            epochs.set_description("Epoch (Loss=%g)" % round(loss,5))
+            main_index += len(batch)
+            loss = total_loss / main_index
+            epochs.set_description("Epoch (Loss=%g)" % round(loss, 5))
+
+        # Validation loss computation for scheduler
+        log.info(f"Validating model at epoch {epoch}")
+        val_loss = 0.0
+        model.eval()  # Set the model to evaluation mode
+        with torch.no_grad():
+            for val_data in valset:
+                x1, x2, edge_index1, edge_index2, edge_attr1, edge_attr2, label = val_data.x1, val_data.x2, val_data.edge_index_1, val_data.edge_index_2, val_data.edge_attr_1, val_data.edge_attr_2, val_data.clone_label
+                label = transfer_label(label)
+                label = torch.tensor(label, dtype=torch.float, device=device)
+                x1 = torch.tensor(x1, dtype=torch.long, device=device)
+                x2 = torch.tensor(x2, dtype=torch.long, device=device)
+                edge_index1 = torch.tensor(edge_index1, dtype=torch.long, device=device)
+                edge_index2 = torch.tensor(edge_index2, dtype=torch.long, device=device)
+                edge_attr1 = torch.tensor(edge_attr1, dtype=torch.long, device=device)
+                edge_attr2 = torch.tensor(edge_attr2, dtype=torch.long, device=device)
+                data = [x1, x2, edge_index1, edge_index2, edge_attr1, edge_attr2]
+                prediction = model(data)
+                cossim = F.cosine_similarity(prediction[0], prediction[1])
+                val_loss += criterion2(cossim, label).item()
+
+        val_loss /= len(valset)  # Average validation loss
+        scheduler.step(val_loss)  # Update the learning rate based on validation loss
+
+        log.info(f"Epoch {epoch}, Validation Loss: {val_loss}, Learning Rate: {optimizer.param_groups[0]['lr']}")
+
+        # Periodic evaluation and saving
         if epoch % params['eval_epoch_interval'] == 0:
-            log.info(f"start evaluation on valset in epoch: {epoch}")
+            log.info(f"Start evaluation on valset in epoch: {epoch}")
             evaluation_gmn(model, testset, params, net_params)
         if epoch % params['save_epoch_interval'] == 0:
             log.info(f"Saving model in epoch: {epoch}")
             torch.save(model.state_dict(), f"{root_ckpt_dir}/model_{epoch}.pth")
-    log.info(f"start evaluation on testset in epoch: {epoch}")
-    evaluation_gmn(model, testset, params, net_params)
 
-
-            
-                
+    # # Final test evaluation
+    # log.info(f"Start evaluation on testset in epoch: {epoch}")
+    # evaluation_gmn(model, testset, params, net_params)
 
 
 
