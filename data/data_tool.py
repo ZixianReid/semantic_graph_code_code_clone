@@ -40,15 +40,33 @@ def split_data_2(graph_dict: dict, labels: list, dataset_name: str):
         dataset_lable = int(ele[4])
         clone_type = str(ele[5])
         similarity_score = float(ele[6])
-        x1, edge_index_1, edge_attr_1 = graph_dict[file_name_1][0]
-        x2, edge_index_2, edge_attr_2 = graph_dict[file_name_2][0]
+
         if split_lable == 0:
             if dataset_name=='BigCloneBench' and dataset_lable==0:
+                x1, edge_index_1, edge_attr_1 = graph_dict[file_name_1][0]
+                x2, edge_index_2, edge_attr_2 = graph_dict[file_name_2][0]
+                train_data.append(Sample(x1, x2, edge_index_1, edge_index_2, edge_attr_1, edge_attr_2, clone_label, dataset_lable, clone_type, similarity_score))
+            if dataset_name == 'GoogleCodeJam' and dataset_lable==1:
+                x1, edge_index_1, edge_attr_1 = graph_dict[file_name_1][0]
+                x2, edge_index_2, edge_attr_2 = graph_dict[file_name_2][0]
                 train_data.append(Sample(x1, x2, edge_index_1, edge_index_2, edge_attr_1, edge_attr_2, clone_label, dataset_lable, clone_type, similarity_score))
         elif split_lable == 1:
-            test_data.append(Sample(x1, x2, edge_index_1, edge_index_2, edge_attr_1, edge_attr_2, clone_label, dataset_lable, clone_type, similarity_score))
+            if dataset_name=='BigCloneBench' and dataset_lable==0:
+                x1, edge_index_1, edge_attr_1 = graph_dict[file_name_1][0]
+                x2, edge_index_2, edge_attr_2 = graph_dict[file_name_2][0]
+                test_data.append(Sample(x1, x2, edge_index_1, edge_index_2, edge_attr_1, edge_attr_2, clone_label, dataset_lable, clone_type, similarity_score))
+            if dataset_name == 'GoogleCodeJam' and dataset_lable==1:
+                x1, edge_index_1, edge_attr_1 = graph_dict[file_name_1][0]
+                x2, edge_index_2, edge_attr_2 = graph_dict[file_name_2][0]                
+                test_data.append(Sample(x1, x2, edge_index_1, edge_index_2, edge_attr_1, edge_attr_2, clone_label, dataset_lable, clone_type, similarity_score))
         elif split_lable == 2:
             if dataset_name=='BigCloneBench' and dataset_lable==0:
+                x1, edge_index_1, edge_attr_1 = graph_dict[file_name_1][0]
+                x2, edge_index_2, edge_attr_2 = graph_dict[file_name_2][0]                
+                val_data.append(Sample(x1, x2, edge_index_1, edge_index_2, edge_attr_1, edge_attr_2, clone_label, dataset_lable, clone_type, similarity_score))
+            if dataset_name == 'GoogleCodeJam' and dataset_lable==1:
+                x1, edge_index_1, edge_attr_1 = graph_dict[file_name_1][0]
+                x2, edge_index_2, edge_attr_2 = graph_dict[file_name_2][0]
                 val_data.append(Sample(x1, x2, edge_index_1, edge_index_2, edge_attr_1, edge_attr_2, clone_label, dataset_lable, clone_type, similarity_score))
 
     return train_data, test_data, val_data

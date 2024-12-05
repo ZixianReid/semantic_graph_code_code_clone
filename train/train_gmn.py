@@ -227,7 +227,7 @@ def train_gmn(MODEL_NAME, dataset, params, net_params, dirs):
 
         # Periodic evaluation and saving
         if epoch % params['eval_epoch_interval'] == 0:
-            log.info(f"Start evaluation on valset in epoch: {epoch}")
+            log.info(f"Start evaluation on testset in epoch: {epoch}")
             evaluation_gmn(model, testset, params, net_params)
         if epoch % params['save_epoch_interval'] == 0:
             log.info(f"Saving model in epoch: {epoch}")

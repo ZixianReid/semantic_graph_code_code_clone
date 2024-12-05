@@ -1,0 +1,45 @@
+{
+    "gpu": {
+        "use": true,
+        "id": 0
+    },
+
+    "model": "graph_match_nerual_network",
+    "language": "Java",
+
+    "out_dir": "out/BCB/AST_CFG_DFG_FA_GMN_BCB/",
+
+
+    "dataset_params":{
+        "name": "BigCloneBench",
+        "graph_model": "semantic_code_graph",
+        "visualization": false,
+        "ast_edge": true,
+        "value_edge": false,
+        "cfg_edge": true,
+        "dfg_edge": true,
+        "if_augument": true,
+        "loops_augument": true
+    },
+
+    "params": {
+        "seed": 41,
+        "epochs": 20,
+        "batch_size": 32,
+        "init_lr": 0.0005,
+        "lr_reduce_factor": 0.5,
+        "lr_schedule_patience": 2,
+        "min_lr": 1e-6,
+        "weight_decay": 1e-4,
+        "print_epoch_interval": 1,
+        "save_epoch_interval": 1,
+        "eval_epoch_interval": 1,
+        "threshold": 0
+    },
+
+    "net_params": {
+        "embedding_dim": 100,
+        "edgelen": 20,
+        "num_layers": 4
+    }
+}

@@ -96,6 +96,7 @@ class SemanticCodeGraphJavaDataset(Dataset):
     def __init__(self, dataset_params):
         super().__init__(dataset_params)
         files_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data_source/dataset_java/')
+        labels_path = os.path.join(files_path, 'clone_labels.txt')
         visualization = dataset_params['visualization']
         dataset = dataset_params['name']
         self.ast_edge = dataset_params['ast_edge']
@@ -110,7 +111,7 @@ class SemanticCodeGraphJavaDataset(Dataset):
             exit(-1)
         else:
             log.info("Creating AST...")
-            astdict, vocabsize, vocabdict = create_ast_2(os.path.join(files_path, 'dataset_files'))
+            astdict, vocabsize, vocabdict, filtered_labels = create_ast_2(os.path.join(files_path, 'dataset_files'), labels_path, dataset)
         
         log.info("Creating separate graph...")
         if visualization:
@@ -123,19 +124,16 @@ class SemanticCodeGraphJavaDataset(Dataset):
         graph_dict = build_graph(astdict, vocabdict, self.ast_edge, self.value_edge, self.cfg_edge, self.dfg_edge, self.if_augument, self.loops_augument)
 
         log.info("Splitting data...")
-        labels_path = os.path.join(files_path, 'clone_labels.txt')
         if not os.path.exists(labels_path):
             log.error(f"labels not found!! in {labels_path}")
             exit(-1)
         else:
-            with open(labels_path, 'r') as f:
-                labels = f.readlines()
-                labels = [label.strip().split(',') for label in labels]
-                self.train_data, self.test_data, self.val_data = split_data_2(graph_dict, labels, dataset)
+            self.train_data, self.test_data, self.val_data = split_data_2(graph_dict, filtered_labels, dataset)
 
         log.info("Dataset loaded successfully")
         self.vocab_length = vocabsize
 
+        
         
     def get_visualization(self):
         return self.newtree, self.edgesrc, self.edgetgt, self.edge_attr

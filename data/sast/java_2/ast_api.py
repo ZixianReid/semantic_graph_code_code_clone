@@ -8,34 +8,59 @@ from anytree import AnyNode, RenderTree
 
 edges={'Nexttoken':2,'Prevtoken':3,'Nextuse':4,'Prevuse':5,'If':6,'Ifelse':7,'While':8,'For':9,'Nextstmt':10,'Prevstmt':11,'Prevsib':12}
 
-def create_ast(dir_path):
+forbideen_files = ['37044', '4892654', '6966398', '7550876']
+
+
+def create_ast(dir_path, label_path, dataset):
+
+    with open(label_path, 'r') as f:
+        labels = f.readlines()
+        labels = [label.strip().split(',') for label in labels]
+
+    filtered_labels = []
+    for ele in labels:
+        dataset_lable = int(ele[4])
+        if dataset=="BigCloneBench" and dataset_lable == 0:
+            if str(ele[1]) in forbideen_files or str(ele[0]) in forbideen_files:
+                continue
+            filtered_labels.append(ele)
+        elif dataset=="GoogleCodeJam" and dataset_lable==1:
+            filtered_labels.append(ele)
+    
+    code_files = []
+    for ele in filtered_labels:
+        code_files.append(ele[0] + '.java')
+        code_files.append(ele[1] + '.java')
+
+    
+    code_files = sorted(set(code_files))
+
     asts=[]
     paths=[]
     alltokens=[]
-    for rt, dirs, files in os.walk(dir_path):
-        for file in files:
-            programfile=open(os.path.join(rt,file),encoding='utf-8')
+    for file in code_files:
+        programfile=open(os.path.join(dir_path,file),encoding='utf-8')
 
-            programtext=programfile.read()
-            programtokens=javalang.tokenizer.tokenize(programtext)
-
-
-            parser=javalang.parse.Parser(programtokens)
-
-            programast=parser.parse_member_declaration()
+        programtext=programfile.read()
+        programtokens=javalang.tokenizer.tokenize(programtext)
 
 
-            paths.append(os.path.join(rt,file))
-            asts.append(programast)
-            get_sequence(programast,alltokens)
-            programfile.close()
+        parser=javalang.parse.Parser(programtokens)
+
+        programast=parser.parse_member_declaration()
+
+
+        paths.append(os.path.join(dir_path,file))
+        asts.append(programast)
+        get_sequence(programast,alltokens)
+        programfile.close()
 
     astdict=dict(zip(paths,asts))
     alltokens=list(set(alltokens))
     vocabsize = len(alltokens)
     tokenids = range(vocabsize)
     vocabdict = dict(zip(alltokens, tokenids))
-    return astdict,vocabsize,vocabdict
+    return astdict,vocabsize,vocabdict, filtered_labels
 
 
 def createseparategraph(astdict,vocabdict,mode='astonly',nextsib=False,ifedge=False,whileedge=False,foredge=False,blockedge=False,nexttoken=False,nextuse=False):

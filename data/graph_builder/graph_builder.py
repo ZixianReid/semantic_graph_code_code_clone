@@ -9,19 +9,74 @@ from data.graph_builder.dfg_builder import get_dfg_edge
 from data.sast.java_2.ast_api import createtree
 from data.graph_builder.code_graph import EDGE_DICT
 from tqdm import tqdm
+import time
 
 
 
-def build_graph(astdict,vocabdict, ast_edge, value_edge, cfg_edge, dfg_edge, if_augument, loops_augument):
+# def build_graph(astdict,vocabdict, ast_edge, value_edge, cfg_edge, dfg_edge, if_augument, loops_augument):
+#     graph_dict = {}
+#     for path,tree in tqdm(astdict.items()):
+#         nodelist = []
+#         newtree=AnyNode(id=0,token=None,data=None, is_statement=False)
+#         createtree(newtree, tree, nodelist)
+#         x = []
+#         edgesrc = []
+#         edgetgt = []
+#         edge_attr=[]
+
+#         if ast_edge and value_edge:
+#             get_ast_edge_without_value_edge(newtree, x, vocabdict, edgesrc, edgetgt, edge_attr)
+#             get_value_edge(newtree, edgesrc, edgetgt, edge_attr)
+#         elif ast_edge and not value_edge:
+#             get_ast_edge(newtree, x, vocabdict, edgesrc, edgetgt, edge_attr)
+#         else:
+#             log.error("AST edge is compulsory!!!")
+#             exit(-1)
+
+#         # build cfg edge
+#         if cfg_edge or dfg_edge:
+#             get_cfg_edge(newtree, edgesrc, edgetgt, edge_attr)
+
+#             if dfg_edge:
+#                 newtree, edgesrc, edgetgt, edge_attr =  get_dfg_edge(newtree, edgesrc, edgetgt, edge_attr)
+
+#             # delete unrequired edges
+#             if not cfg_edge:
+#                 edgesrc, edgetgt, edge_attr = delete_edge(edgesrc, edgetgt, edge_attr, [EDGE_DICT['cfg_edge']])
+
+#             if not dfg_edge:
+#                 edgesrc, edgetgt, edge_attr = delete_edge(edgesrc, edgetgt, edge_attr, [EDGE_DICT['dfg_edge']])
+
+#         if  if_augument:
+#             get_if_edge(newtree, edgesrc, edgetgt, edge_attr)
+
+#         if loops_augument:
+#             get_loops_edge(newtree, edgesrc, edgetgt, edge_attr)
+
+#         edgesrc, edgetgt, edge_attr = remove_duplicates_edges(edgesrc, edgetgt, edge_attr)
+        
+#         edge_index=[edgesrc, edgetgt]
+#         astlength=len(x)
+#         file_name = os.path.splitext(os.path.basename(path))[0]
+#         edge_attr = [inner[0] for inner in edge_attr]
+#         graph_dict[file_name]=[[x,edge_index,edge_attr],astlength]
+    
+#     return graph_dict
+
+
+def build_graph(astdict, vocabdict, ast_edge, value_edge, cfg_edge, dfg_edge, if_augument, loops_augument):
     graph_dict = {}
-    for path,tree in tqdm(astdict.items()):
+    
+    for path, tree in tqdm(astdict.items()):
+        start_time = time.time()  # Start timer
+
         nodelist = []
-        newtree=AnyNode(id=0,token=None,data=None, is_statement=False)
+        newtree = AnyNode(id=0, token=None, data=None, is_statement=False)
         createtree(newtree, tree, nodelist)
         x = []
         edgesrc = []
         edgetgt = []
-        edge_attr=[]
+        edge_attr = []
 
         if ast_edge and value_edge:
             get_ast_edge_without_value_edge(newtree, x, vocabdict, edgesrc, edgetgt, edge_attr)
@@ -35,8 +90,9 @@ def build_graph(astdict,vocabdict, ast_edge, value_edge, cfg_edge, dfg_edge, if_
         # build cfg edge
         if cfg_edge or dfg_edge:
             get_cfg_edge(newtree, edgesrc, edgetgt, edge_attr)
-
-            newtree, edgesrc, edgetgt, edge_attr =  get_dfg_edge(newtree, edgesrc, edgetgt, edge_attr)
+            
+            if dfg_edge:
+                newtree, edgesrc, edgetgt, edge_attr = get_dfg_edge(newtree, edgesrc, edgetgt, edge_attr)
 
             # delete unrequired edges
             if not cfg_edge:
@@ -45,21 +101,31 @@ def build_graph(astdict,vocabdict, ast_edge, value_edge, cfg_edge, dfg_edge, if_
             if not dfg_edge:
                 edgesrc, edgetgt, edge_attr = delete_edge(edgesrc, edgetgt, edge_attr, [EDGE_DICT['dfg_edge']])
 
-        if  if_augument:
+        if if_augument:
             get_if_edge(newtree, edgesrc, edgetgt, edge_attr)
 
         if loops_augument:
             get_loops_edge(newtree, edgesrc, edgetgt, edge_attr)
 
         edgesrc, edgetgt, edge_attr = remove_duplicates_edges(edgesrc, edgetgt, edge_attr)
-        
-        edge_index=[edgesrc, edgetgt]
-        astlength=len(x)
+
+        edge_index = [edgesrc, edgetgt]
+        astlength = len(x)
         file_name = os.path.splitext(os.path.basename(path))[0]
         edge_attr = [inner[0] for inner in edge_attr]
-        graph_dict[file_name]=[[x,edge_index,edge_attr],astlength]
-    
+        graph_dict[file_name] = [[x, edge_index, edge_attr], astlength]
+
+        # Check if the iteration exceeds 2 minutes
+        time_taken = time.time() - start_time
+        if time_taken  > 120:
+            log.info(f"Iteration exceeded 2 minutes for path: {path}")
+            log.info(f"Path: {path} processed in {time_taken:.2f} seconds")
+
+
     return graph_dict
+
+
+
 
 def build_graph_visualization(astdict,vocabdict, ast_edge, value_edge, cfg_edge, dfg_edge, if_augument, loops_augument):
     if len(astdict) != 1:
@@ -166,7 +232,10 @@ def delete_edge(edgesrc, edgetgt, edge_attr, edge_type):
         if attr != edge_type
     ]
 
-    edgesrc, edgetgt, edge_attr = zip(*filtered) if filtered else ([], [], [])
+    # Convert the filtered results to lists
+    edgesrc, edgetgt, edge_attr = (
+        list(x) for x in zip(*filtered)
+    ) if filtered else ([], [], [])
 
     return edgesrc, edgetgt, edge_attr
 
