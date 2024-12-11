@@ -7,7 +7,7 @@
     "model": "graph_convolution_nerual_network",
     "language": "Java",
 
-    "out_dir": "out_gcn/BCB/AST_GCN_BCB/",
+    "out_dir": "out_gcn/BCB/AST_CFG_FA_GCN_BCB/",
 
 
     "dataset_params":{
@@ -16,10 +16,10 @@
         "visualization": false,
         "ast_edge": true,
         "value_edge": false,
-        "cfg_edge": false,
+        "cfg_edge": true,
         "dfg_edge": false,
-        "if_augument": false,
-        "loops_augument": false
+        "if_augument": true,
+        "loops_augument": true
     },
 
     "params": {

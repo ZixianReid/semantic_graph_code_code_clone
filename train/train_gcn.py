@@ -115,33 +115,30 @@ def train_gcn(MODEL_NAME, dataset, params, net_params, dirs):
             loss = total_loss / main_index
             epochs.set_description("Epoch (Loss=%g)" % round(loss, 5))
 
-        # # Validation loss computation for scheduler
-        # log.info(f"Validating model at epoch {epoch}")
-        # val_loss = 0.0
-        # model.eval()  # Set the model to evaluation mode
-        # with torch.no_grad():
-        #     for val_data in valset:
-        #         x1, x2, edge_index1, edge_index2, edge_attr1, edge_attr2, label = val_data.x1, val_data.x2, val_data.edge_index_1, val_data.edge_index_2, val_data.edge_attr_1, val_data.edge_attr_2, val_data.clone_label
-        #         label = transfer_label(label)
-        #         label = torch.tensor(label, dtype=torch.float, device=device)
-        #         x1 = torch.tensor(x1, dtype=torch.long, device=device)
-        #         x2 = torch.tensor(x2, dtype=torch.long, device=device)
-        #         edge_index1 = torch.tensor(edge_index1, dtype=torch.long, device=device)
-        #         edge_index2 = torch.tensor(edge_index2, dtype=torch.long, device=device)
-        #         edge_attr1 = torch.tensor(edge_attr1, dtype=torch.long, device=device)
-        #         edge_attr2 = torch.tensor(edge_attr2, dtype=torch.long, device=device)
+        # Validation loss computation for scheduler
+        log.info(f"Validating model at epoch {epoch}")
+        val_loss = 0.0
+        model.eval()  # Set the model to evaluation mode
+        with torch.no_grad():
+            for val_data in valset:
+                x1, x2, edge_index1, edge_index2, edge_attr1, edge_attr2, label = val_data.x1, val_data.x2, val_data.edge_index_1, val_data.edge_index_2, val_data.edge_attr_1, val_data.edge_attr_2, val_data.clone_label
+                label = transfer_label(label)
+                label = torch.tensor(label, dtype=torch.float, device=device)
+                x1 = torch.tensor(x1, dtype=torch.long, device=device)
+                x2 = torch.tensor(x2, dtype=torch.long, device=device)
+                edge_index1 = torch.tensor(edge_index1, dtype=torch.long, device=device)
+                edge_index2 = torch.tensor(edge_index2, dtype=torch.long, device=device)
+                edge_attr1 = torch.tensor(edge_attr1, dtype=torch.long, device=device)
+                edge_attr2 = torch.tensor(edge_attr2, dtype=torch.long, device=device)
+                data_input=[x1, x2, edge_index1, edge_index2, edge_attr1, edge_attr2]
+                prediction=model(data_input)
+                batchloss = batchloss + criterion2(prediction, label)
+                val_loss += criterion2(prediction, label).item()
 
-        #         data1=[x1,edge_index1,edge_attr1]
-        #         data2=[x2,edge_index2,edge_attr2]
-        #         prediction1=model(data1)
-        #         prediction2=model(data2)
-        #         cossim=F.cosine_similarity(prediction1,prediction2)
-        #         val_loss += criterion2(cossim, label).item()
+        val_loss /= len(valset)  # Average validation loss
+        scheduler.step(val_loss)  # Update the learning rate based on validation loss
 
-        # val_loss /= len(valset)  # Average validation loss
-        # scheduler.step(val_loss)  # Update the learning rate based on validation loss
-
-        # log.info(f"Epoch {epoch}, Validation Loss: {val_loss}, Learning Rate: {optimizer.param_groups[0]['lr']}")
+        log.info(f"Epoch {epoch}, Validation Loss: {val_loss}, Learning Rate: {optimizer.param_groups[0]['lr']}")
 
         # Periodic evaluation and saving
         if epoch % params['eval_epoch_interval'] == 0:

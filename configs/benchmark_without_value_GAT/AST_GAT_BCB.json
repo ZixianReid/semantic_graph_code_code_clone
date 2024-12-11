@@ -4,10 +4,10 @@
         "id": 0
     },
 
-    "model": "graph_convolution_nerual_network",
+    "model": "graph_attention_nerual_network",
     "language": "Java",
 
-    "out_dir": "out_gcn/BCB/AST_GCN_BCB/",
+    "out_dir": "out_gat/BCB/AST_GAT_BCB/",
 
 
     "dataset_params":{
@@ -40,6 +40,7 @@
     "net_params": {
         "embedding_dim": 100,
         "edgelen": 20,
-        "num_layers": 4
+        "num_layers": 4,
+        "heads": 4
     }
 }

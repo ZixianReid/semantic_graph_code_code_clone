@@ -17,5 +17,10 @@ venv/
 
 
 /out/
+/out_gat/
+/out_gcn/
+/out_gcn_without_weight/
+/out_gmn/
 /.conda/
 /.idea/
+semantic_graph_code_clone.tar.gz
