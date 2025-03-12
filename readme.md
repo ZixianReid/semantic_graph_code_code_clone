@@ -1,5 +1,5 @@
 # **Experimental Platform for Paper:**
-# *"AST-Enhanced or AST-Overloaded? The Surprising Impact of Hybrid Graph Representations on Code Clone Detection"*
+## *"AST-Enhanced or AST-Overloaded? The Surprising Impact of Hybrid Graph Representations on Code Clone Detection"*
 
 ---
 
@@ -29,8 +29,14 @@ The dataset includes a `clone_label.txt` file structured as follows, with column
    - Since it lacks false clone pairs, we use it **only for testing**, categorizing them into different clone types.
 
 🚨 **Note:** The current experiments are implemented **only on the BCB dataset**.  
-📦 **Before running experiments, unzip** `data_java.zip`.
-
+📦 **Before running experiments, unzip** `data_java.zip`, following:
+```bash
+mkdir /data/data_source
+cd data
+mv data_java.zip /data/data_source
+unzip data_java.zip
+sh run_gat.sh
+```
 ---
 
 ## **Installation**
