@@ -13,7 +13,75 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
+import sys
+import argparse
+import json
+import os
+import time
+import torch
+import numpy as np
+from data.data import LoadData
+from util.setting import init_logging, log, view_params
+from data.dataset_builder import Dataset
+from nets.load_net import gnn_model
+from train.load_train import trainer
+from train.train_gmn import load_and_evaluate_model
+import torch.optim as optim
+from torch.utils.data import DataLoader
+from tqdm import tqdm
+
 from tensorboardX import SummaryWriter
+
+
+
+def get_size(obj):
+    """ Recursively calculates the size of objects in bytes """
+    if isinstance(obj, dict):
+        return sum(get_size(v) for v in obj.values()) + sys.getsizeof(obj)
+    elif isinstance(obj, list) or isinstance(obj, tuple):
+        return sum(get_size(v) for v in obj) + sys.getsizeof(obj)
+    elif isinstance(obj, np.ndarray) or isinstance(obj, torch.Tensor):
+        return obj.element_size() * obj.nelement()
+    else:
+        return sys.getsizeof(obj)
+
+def compute_total_graph_dict_size(graph_dict):
+    """
+    Compute total memory footprint of the graph_dict, including all graphs stored within it.
+
+    :param graph_dict: Dictionary storing graphs in the format {filename: [[x, edge_index, edge_attr], astlength]}
+    :return: Total size in bytes
+    """
+    total_size = get_size(graph_dict)
+    return total_size
+
+def compute_average_graph_density(graph_dict):
+    """
+    Computes the average graph density across all graphs stored in graph_dict.
+
+    :param graph_dict: Dictionary storing graphs in the format {filename: [[x, edge_index, edge_attr], astlength]}
+    :return: Average Graph Density
+    """
+    total_density = 0
+    graph_count = len(graph_dict)
+
+    if graph_count == 0:
+        return 0  # No graphs to compute
+
+    for file_name, graph_data in graph_dict.items():
+        x, edge_index, edge_attr = graph_data[0]  # Extract graph components
+        num_nodes = len(x)  # Number of nodes |V|
+        num_edges = len(edge_index[0])  # Number of edges |E|
+
+        # Compute density for this graph
+        max_possible_edges = num_nodes * (num_nodes - 1)
+        density = num_edges / max_possible_edges if max_possible_edges > 0 else 0
+
+        total_density += density
+
+    # Compute average density
+    avg_density = total_density / graph_count
+    return avg_density
 
 def gpu_setup(use_gpu, gpu_id):
     os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
@@ -161,9 +229,24 @@ def main():
 
     # dataset
     dataset = LoadData(LANGUAGE, dataset_params)
-    
 
-    
-    trainer(MODEL_NAME, dataset, params, net_params, dirs)
+    graph_dict = dataset.graph_dict
+
+
+
+
+    total_memory_size = compute_total_graph_dict_size(graph_dict)
+    print(f"Total Memory Used by graph_dict: {total_memory_size / (1024 * 1024):.2f} MB")
+    average_density = compute_average_graph_density(graph_dict)
+    print(f"Average Graph Density: {average_density:.4f}")
+
+
+    model_path = '/home/zixian/PycharmProjects/semantic_graph_code_code_clone/run/out_gmn/BCB/AST_GMN_BCB/checkpoints/graph_match_nerual_network_JavaBigCloneBench_GPU0_14h53m56s_on_Jan_06_2025/model_19.pth'
+
+    net_params['vocablen'] = dataset.vocab_length
+    load_and_evaluate_model(model_path, dataset.test_data, params, net_params)
+
+
+
 
 main()

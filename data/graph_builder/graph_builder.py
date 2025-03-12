@@ -4,7 +4,8 @@ from javalang.ast import Node
 from anytree import AnyNode, RenderTree
 from data.graph_builder.ast_builder import get_ast_edge, get_value_edge, get_ast_edge_without_value_edge
 from data.graph_builder.cfg_builder import get_cfg_edge
-from data.graph_builder.fa_builder import get_if_edge, get_loops_edge
+# from data.graph_builder.fa_builder import get_if_edge, get_loops_edge
+from data.graph_builder.fa_builder import get_if_edge, get_loops_edge, get_next_sib_edge, get_next_use_edge, get_next_token_edge
 from data.graph_builder.dfg_builder import get_dfg_edge
 from data.sast.java_2.ast_api import createtree
 from data.graph_builder.code_graph import EDGE_DICT
@@ -106,6 +107,14 @@ def build_graph(astdict, vocabdict, ast_edge, value_edge, cfg_edge, dfg_edge, if
 
         if loops_augument:
             get_loops_edge(newtree, edgesrc, edgetgt, edge_attr)
+        
+        if if_augument and loops_augument:
+            get_next_sib_edge(newtree, edgesrc, edgetgt, edge_attr)
+            tokenlist=[]
+            get_next_token_edge(newtree, edgesrc, edgetgt, edge_attr, tokenlist)
+            variabledict={} 
+            get_next_use_edge(newtree, edgesrc, edgetgt, edge_attr, variabledict)
+
 
         edgesrc, edgetgt, edge_attr = remove_duplicates_edges(edgesrc, edgetgt, edge_attr)
 
@@ -116,10 +125,10 @@ def build_graph(astdict, vocabdict, ast_edge, value_edge, cfg_edge, dfg_edge, if
         graph_dict[file_name] = [[x, edge_index, edge_attr], astlength]
 
         # Check if the iteration exceeds 2 minutes
-        time_taken = time.time() - start_time
-        if time_taken  > 120:
-            log.info(f"Iteration exceeded 2 minutes for path: {path}")
-            log.info(f"Path: {path} processed in {time_taken:.2f} seconds")
+        # time_taken = time.time() - start_time
+        # if time_taken  > 120:
+        #     log.info(f"Iteration exceeded 2 minutes for path: {path}")
+        #     log.info(f"Path: {path} processed in {time_taken:.2f} seconds")
 
 
     return graph_dict
@@ -177,6 +186,14 @@ def build_graph_visualization(astdict,vocabdict, ast_edge, value_edge, cfg_edge,
         if not loops_augument:
             edgesrc, edgetgt, edge_attr = delete_edge(edgesrc, edgetgt, edge_attr, [EDGE_DICT['while_edge']])
             edgesrc, edgetgt, edge_attr = delete_edge(edgesrc, edgetgt, edge_attr, [EDGE_DICT['for_edge']])
+
+        
+        if if_augument and loops_augument:
+            get_next_sib_edge(newtree, edgesrc, edgetgt, edge_attr)
+            tokenlist=[]
+            get_next_token_edge(newtree, edgesrc, edgetgt, edge_attr, tokenlist)
+            variabledict={}
+            get_next_use_edge(newtree, edgesrc, edgetgt, edge_attr, variabledict)        
 
         edgesrc, edgetgt, edge_attr = remove_duplicates_edges(edgesrc, edgetgt, edge_attr)
 

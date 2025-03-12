@@ -7,7 +7,7 @@
     "model": "graph_match_nerual_network",
     "language": "Java",
 
-    "out_dir": "out/BCB/AST_CFG_GMN_BCB/",
+    "out_dir": "out_gmn/BCB/AST_FA_GMN_BCB/",
 
 
     "dataset_params":{
@@ -16,10 +16,10 @@
         "visualization": false,
         "ast_edge": true,
         "value_edge": false,
-        "cfg_edge": true,
+        "cfg_edge": false,
         "dfg_edge": false,
-        "if_augument": false,
-        "loops_augument": false
+        "if_augument": true,
+        "loops_augument": true
     },
 
     "params": {

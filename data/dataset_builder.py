@@ -12,7 +12,7 @@ from data.data_tool import split_data, split_data_2
 from data.sast.java_2.ast_api import create_ast as create_ast_2
 from data.sast.java_2.ast_api import createseparategraph
 from data.graph_builder.graph_builder import build_graph, build_graph_visualization
-
+import time
 class Dataset:
     def __init__(self, dataset_params):
         self.train_data = []
@@ -104,7 +104,8 @@ class SemanticCodeGraphJavaDataset(Dataset):
         self.cfg_edge = dataset_params['cfg_edge']
         self.dfg_edge = dataset_params['dfg_edge']
         self.if_augument = dataset_params['if_augument']
-        self.loops_augument = dataset_params['loops_augument']  
+        self.loops_augument = dataset_params['loops_augument']
+        
 
         if not os.path.exists(files_path):
             log.error(f"dataset not found!! in {files_path}")
@@ -115,13 +116,22 @@ class SemanticCodeGraphJavaDataset(Dataset):
         
         log.info("Creating separate graph...")
         if visualization:
-            key = '/home/zixian/PycharmProjects/semantic_graph_code_code_clone/data/data_source/dataset_java_small/dataset_files/0a.java'
+            key = '/home/zixian/PycharmProjects/semantic_graph_code_code_clone/data/data_source/dataset_java_small/dataset_files/1362.java'
             astdict =  {key: astdict[key]} if key in astdict else {}
+
+   
             newtree, edgesrc, edgetgt, edge_attr = build_graph_visualization(astdict, vocabdict, self.ast_edge, self.value_edge, self.cfg_edge, self.dfg_edge, self.if_augument, self.loops_augument)
+
+
             self.newtree, self.edgesrc, self.edgetgt, self.edge_attr = newtree, edgesrc, edgetgt, edge_attr
             return
 
+        start_time = time.time()
         graph_dict = build_graph(astdict, vocabdict, self.ast_edge, self.value_edge, self.cfg_edge, self.dfg_edge, self.if_augument, self.loops_augument)
+
+        end_time = time.time()
+        log.info(f"Time taken to build visualization: {end_time - start_time}")
+
 
         log.info("Splitting data...")
         if not os.path.exists(labels_path):
@@ -132,6 +142,7 @@ class SemanticCodeGraphJavaDataset(Dataset):
 
         log.info("Dataset loaded successfully")
         self.vocab_length = vocabsize
+        self.graph_dict = graph_dict
 
         
         

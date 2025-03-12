@@ -38,32 +38,51 @@ def extract_node_edges(root):
 
 
 def add_nodes_edges(graph, node_dict, edgesrc, edgetgt, edge_attr):
+    # color_map = {
+    #     'ast_edge': 'black',
+    #     'value_edge': 'blue',
+    #     'cfg_edge': 'green',
+    #     'dfg_edge': 'pink',
+    #     'if_edge': 'red',
+    #     'ifelse_edge': 'purple',
+    #     'while_edge': 'orange',
+    #     'for_edge': 'brown',
+    # }
+
+    # edge_type_map = {
+    #     0: 'black',
+    #     1: 'blue',
+    #     2: 'green',
+    #     3: 'pink',
+    #     4: 'red',
+    #     5: 'purple',
+    #     6: 'orange',
+    #     7: 'brown'
+    # }
     color_map = {
         'ast_edge': 'black',
-        'value_edge': 'blue',
         'cfg_edge': 'green',
         'dfg_edge': 'pink',
-        'if_edge': 'red',
-        'ifelse_edge': 'purple',
-        'while_edge': 'orange',
-        'for_edge': 'brown',
+        'fa-ast_edge': 'red',
     }
 
     edge_type_map = {
         0: 'black',
-        1: 'blue',
+        1: 'black',
         2: 'green',
         3: 'pink',
         4: 'red',
-        5: 'purple',
-        6: 'orange',
-        7: 'brown'
+        5: 'red',
+        6: 'red',
+        7: 'red'
     }
 
     for node_id, node_obj in node_dict.items():
 
 
-        graph.node(str(node_id), label=node_obj.token + "-" + str(node_id)  if node_obj.token else 'Unknown')
+        graph.node(str(node_id), label=node_obj.token if node_obj.token else 'Unknown')
+        # graph.node(str(node_id), label=node_obj.token + "-" + str(node_id)  if node_obj.token else 'Unknown')
+
 
     for i in range(len(edgesrc)):
         scr_node = node_dict.get(edgesrc[i])
@@ -85,7 +104,8 @@ add_nodes_edges(g, extract_node_edges(newtree), edgesrc, edgetgt, edge_attr)
 g.render()
 
 from IPython.display import Image
-Image(filename='ast_tree.gv.png')
+# Image(filename='ast_tree.gv11.png')
+
 
 
 # for pre, fill, node in RenderTree(newtree):

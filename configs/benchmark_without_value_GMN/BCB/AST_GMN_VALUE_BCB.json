@@ -7,7 +7,7 @@
     "model": "graph_match_nerual_network",
     "language": "Java",
 
-    "out_dir": "out/BCB/AST_CFG_DFG_GMN_BCB/",
+    "out_dir": "out_gmn/BCB/AST_VALUE_GMN_BCB/",
 
 
     "dataset_params":{
@@ -15,9 +15,9 @@
         "graph_model": "semantic_code_graph",
         "visualization": false,
         "ast_edge": true,
-        "value_edge": false,
-        "cfg_edge": true,
-        "dfg_edge": true,
+        "value_edge": true,
+        "cfg_edge": false,
+        "dfg_edge": false,
         "if_augument": false,
         "loops_augument": false
     },

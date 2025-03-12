@@ -7,7 +7,7 @@
     "model": "gated_graph_nerual_network",
     "language": "Java",
 
-    "out_dir": "out_ggnn/BCB/AST_GGNN_BCB/",
+    "out_dir": "out_ggnn/BCB/AST_CFG_GGNN_BCB/",
 
 
     "dataset_params":{
@@ -16,7 +16,7 @@
         "visualization": false,
         "ast_edge": true,
         "value_edge": false,
-        "cfg_edge": false,
+        "cfg_edge": true,
         "dfg_edge": false,
         "if_augument": false,
         "loops_augument": false

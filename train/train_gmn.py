@@ -6,13 +6,40 @@ import torch
 import torch.nn.functional as F
 from tqdm import tqdm, trange
 from eval.load_eval import evaluation
-
+import time
 def transfer_label(label):
     if label == 0:
         return -1
     else:
         return 1
 
+
+def load_and_evaluate_model(model_path, dataset, params, net_params):
+            device = net_params['device']
+            model = gnn_model('graph_match_nerual_network', net_params)  # Replace 'MODEL_NAME' with the actual model name
+            model.load_state_dict(torch.load(model_path, map_location=device))
+            model.to(device)
+            model.eval()  # Set the model to evaluation mode
+
+            log.info(f"Loaded model from {model_path}")
+            start_time = time.time()    
+            for data in tqdm(dataset, desc="Processing Dataset", total=len(dataset)):
+                x1, x2, edge_index1, edge_index2, edge_attr1, edge_attr2, label = data.x1, data.x2, data.edge_index_1, data.edge_index_2, data.edge_attr_1, data.edge_attr_2, data.clone_label
+                label = transfer_label(label)
+                label=torch.tensor(label, dtype=torch.float, device=device)
+                x1=torch.tensor(x1, dtype=torch.long, device=device)
+                x2=torch.tensor(x2, dtype=torch.long, device=device)
+                edge_index1=torch.tensor(edge_index1, dtype=torch.long, device=device)
+                edge_index2=torch.tensor(edge_index2, dtype=torch.long, device=device)
+                edge_attr1=torch.tensor(edge_attr1, dtype=torch.long, device=device)
+                edge_attr2=torch.tensor(edge_attr2, dtype=torch.long, device=device)   
+                data_input=[x1, x2, edge_index1, edge_index2, edge_attr1, edge_attr2]
+                prediction=model(data_input)
+
+            end_time = time.time()
+            log.info(f"Total time taken: {end_time - start_time}")
+            print(f"Total time taken: {end_time - start_time}")
+            log.info("Evaluation completed")
 
 def evaluation_gmn(model, dataset, params, net_params):
     device = net_params['device']

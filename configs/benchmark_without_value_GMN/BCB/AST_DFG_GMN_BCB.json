@@ -4,10 +4,10 @@
         "id": 0
     },
 
-    "model": "gated_graph_nerual_network",
+    "model": "graph_match_nerual_network",
     "language": "Java",
 
-    "out_dir": "out_ggnn/BCB/AST_GGNN_BCB/",
+    "out_dir": "out_gmn/BCB/AST_DFG_GMN_BCB/",
 
 
     "dataset_params":{
@@ -17,7 +17,7 @@
         "ast_edge": true,
         "value_edge": false,
         "cfg_edge": false,
-        "dfg_edge": false,
+        "dfg_edge": true,
         "if_augument": false,
         "loops_augument": false
     },

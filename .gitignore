@@ -25,6 +25,12 @@ venv/
 /.idea/
 /tmp/
 
+
+/run/out_gat/
+/run/out_ggnn/
+/run/out_gmn/
+
+/out_ggnn/
 semantic_graph_code_clone.tar.gz
 /bin/
 /conda-meta/
