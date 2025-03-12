@@ -35,7 +35,6 @@ mkdir /data/data_source
 cd data
 mv data_java.zip /data/data_source
 unzip data_java.zip
-sh run_gat.sh
 ```
 ---
 
