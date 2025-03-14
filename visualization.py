@@ -60,10 +60,10 @@ def add_nodes_edges(graph, node_dict, edgesrc, edgetgt, edge_attr):
     #     7: 'brown'
     # }
     color_map = {
-        'ast_edge': 'black',
-        'cfg_edge': 'green',
-        'dfg_edge': 'pink',
-        'fa-ast_edge': 'red',
+        'AST_edge': 'black',
+        'CFG_edge': 'green',
+        'DFG_edge': 'pink',
+        'FA_edge': 'red',
     }
 
     edge_type_map = {
@@ -94,7 +94,7 @@ def add_nodes_edges(graph, node_dict, edgesrc, edgetgt, edge_attr):
     with graph.subgraph(name="legend") as s:
         s.attr(label='Legend', style='dashed')
         for edge_type_name, edge_color in color_map.items():
-            s.node(edge_type_name, label=edge_type_name, shape='plaintext', fontcolor=edge_color)
+            s.node(edge_type_name, label=edge_type_name, shape='plaintext', fontcolor=edge_color, fontsize="20")  
 
 
 g = Digraph('AST', filename='ast_tree.gv', format='png', node_attr={'shape': 'box', 'fontname': 'Arial'})
