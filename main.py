@@ -49,7 +49,7 @@ def main():
     parser = argparse.ArgumentParser(description='code clone detection')
     parser.add_argument('-l', '--logging', type=int, default=20,
                         help='Log level [10-50] (default: 10 - Debug)')
-    parser.add_argument('--config', default='/home/zixian/PycharmProjects/semantic_graph_code_code_clone/configs/benchmark_without_value_GMN/BCB/AST_CFG_DFG_FA_GMN_BCB.json')
+    parser.add_argument('--config', default='/home/zixian/PycharmProjects/semantic_graph_code_code_clone/configs/benchmark_without_value_GMN/BCB/AST_GMN_BCB.json')
     parser.add_argument('--gpu_id', help="Please give a value for gpu id")
     parser.add_argument('--language')
     parser.add_argument('--out_dir')

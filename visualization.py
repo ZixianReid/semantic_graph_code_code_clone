@@ -38,27 +38,7 @@ def extract_node_edges(root):
 
 
 def add_nodes_edges(graph, node_dict, edgesrc, edgetgt, edge_attr):
-    # color_map = {
-    #     'ast_edge': 'black',
-    #     'value_edge': 'blue',
-    #     'cfg_edge': 'green',
-    #     'dfg_edge': 'pink',
-    #     'if_edge': 'red',
-    #     'ifelse_edge': 'purple',
-    #     'while_edge': 'orange',
-    #     'for_edge': 'brown',
-    # }
 
-    # edge_type_map = {
-    #     0: 'black',
-    #     1: 'blue',
-    #     2: 'green',
-    #     3: 'pink',
-    #     4: 'red',
-    #     5: 'purple',
-    #     6: 'orange',
-    #     7: 'brown'
-    # }
     color_map = {
         'AST_edge': 'black',
         'CFG_edge': 'green',

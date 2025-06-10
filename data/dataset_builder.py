@@ -95,7 +95,7 @@ class FAJavaDataset(Dataset):
 class SemanticCodeGraphJavaDataset(Dataset):
     def __init__(self, dataset_params):
         super().__init__(dataset_params)
-        files_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data_source/dataset_java/')
+        files_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data_source/dataset_java_small/')
         labels_path = os.path.join(files_path, 'clone_labels.txt')
         visualization = dataset_params['visualization']
         dataset = dataset_params['name']

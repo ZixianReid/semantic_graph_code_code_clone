@@ -9,6 +9,7 @@ class DDGNode():
     def __init__(self, node_key: str = None, node_type: str = None, defs: list = [], uses : list = [], unknow: list = []) -> None:
         if node_key == None:
             logger.error('DDGNode initialization need node type, exit.')
+            print('DDGNode initialization need node type, exit.')
             exit(-1)
         self.node_key = node_key
         self.node_type = node_type
@@ -86,6 +87,7 @@ def gen_def_use_chain(cfg_cpg, node):
         ddg_node = merge_def_use(cfg_cpg, current_node)
         if ddg_node.node_key in ddg_chain:
             log.error('Appear duplicated Dict key, exit.')
+            print(f"Appear duplicated Dict key: {ddg_node.node_key}, exit.")
             exit(-1)
         ddg_chain[ddg_node.node_key] = ddg_node
         node_successors = list(cfg_cpg.successors(current_node))
@@ -113,7 +115,9 @@ def back_tracking(cfg_cpg, node, def_use_chain, use_var):
             is_statement = cfg_cpg.nodes[_pred]['is_statement']
             if is_statement and _pred not in visited and check_edge(cfg_cpg, _pred, current_node):
                 if _pred not in def_use_chain:
-                    log.error(f"Parent node {_pred} not in def_use_chain")
+                    log.error(f"Parent node {_pred} not in def_use_chain, exit.")
+                    print(f"Parent node {_pred} not in def_use_chain, exit.")
+                    print(f"Parent node token: {cfg_cpg.nodes[_pred]['token']}")
                     exit(-1)
                 ddg_predecessor = def_use_chain[_pred]
                 if has_dd_rel(use_var, ddg_predecessor) and not check_dfg_edge(cfg_cpg, ddg_predecessor.node_key, node):
@@ -247,6 +251,7 @@ def ddg_ternaryexpression(cfg_cpg,node):
     node_successors = list(cfg_cpg.successors(node))
     if len(node_successors) != 3:
         log.error(f"TernaryExpression node has {len(node_successors)} children, expected 3")
+        print(f"TernaryExpression node has {len(node_successors)} children, expected 3")
         exit(-1)
 
     for _succ in node_successors:
@@ -258,10 +263,15 @@ def ddg_ternaryexpression(cfg_cpg,node):
     return [defs, uses, unknown]
 
 
+# def ddg_string(cfg_cpg,node):
+#     defs, uses = [], []
+#     unknown = [cfg_cpg.nodes[node]['token']]
+#     return [defs, uses, unknown]
+
 def ddg_string(cfg_cpg,node):
-    defs, uses = [], []
+    # defs, uses = [], []
     unknown = [cfg_cpg.nodes[node]['token']]
-    return [defs, uses, unknown]
+    return [unknown, unknown, unknown]
 
 
 def ddg_formalparameter(cfg_cpg,node):
@@ -296,6 +306,7 @@ def ddg_literal(cfg_cpg,node):
 
     if len(node_successors) == 0:
         log.error(f"Literal node has {len(node_successors)} children, expected more than 0")
+        print(f"Literal node has {len(node_successors)} children, expected more than 0")
         exit(-1)
     if len(node_successors) == 1:
         _f_def, _f_use, _f_unknown = extract_def_use(cfg_cpg, node_successors[0])
@@ -316,6 +327,7 @@ def ddg_arrayselector(cfg_cpg,node):
     uses = _l_def + _l_use + _l_unknown + _r_def + _r_use + _r_unknown
     return [defs, uses, unknown]
 
+
 def ddg_classcreator(cfg_cpg,node):
     defs, uses, unknown = [], [], []
     node_successors = list(cfg_cpg.successors(node))
@@ -333,14 +345,15 @@ def ddg_variabledeclarator(cfg_cpg,node):
     node_successors = list(cfg_cpg.successors(node))
     if len(node_successors) not in [1, 2]:
         log.error(f"VariableDeclarator node has {len(node_successors)} children, expected 2")
+        print(f"VariableDeclarator node has {len(node_successors)} children, expected 2")
         exit(-1)
     
     if len(node_successors) == 1:
         _f_defs, _f_uses, _f_unknown = extract_def_use(cfg_cpg, node_successors[0])
         defs = defs + _f_defs + _f_unknown
     else:
-        _f_defs, _f_uses, _f_unknown = extract_def_use(cfg_cpg, node_successors[-1])
-        _t_defs, _t_uses, _t_unknown = extract_def_use(cfg_cpg, node_successors[0])
+        _f_defs, _f_uses, _f_unknown = extract_def_use(cfg_cpg, node_successors[0])
+        _t_defs, _t_uses, _t_unknown = extract_def_use(cfg_cpg, node_successors[-1])
         defs = defs + _f_defs + _f_unknown
         uses = uses + _f_uses + _t_defs + _t_uses + _t_unknown
     return [defs, uses, unknown]
@@ -351,6 +364,7 @@ def ddg_assignment(cfg_cpg,node):
     node_successors = list(cfg_cpg.successors(node))
     if len(node_successors) != 3:
         log.error(f"Assignment node has {len(node_successors)} children, expected 3")
+        print(f"Assignment node has {len(node_successors)} children, expected 3")
         exit(-1)
 
     _f_def, _f_use, _f_unknown = extract_def_use(cfg_cpg, node_successors[0])
@@ -369,6 +383,7 @@ def ddg_binaryoperation(cfg_cpg, node):
 
     if len(node_successors) != 3:
         log.error(f"BinaryOperation node has {len(node_successors)} children, expected 3")
+        print(f"BinaryOperation node has {len(node_successors)} children, expected 3")
         exit(-1)
     
     _f_def, _f_use, _f_unknown = extract_def_use(cfg_cpg, node_successors[1])

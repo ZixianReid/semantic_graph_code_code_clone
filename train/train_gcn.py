@@ -147,3 +147,186 @@ def train_gcn(MODEL_NAME, dataset, params, net_params, dirs):
         if epoch % params['save_epoch_interval'] == 0:
             log.info(f"Saving model in epoch: {epoch}")
             torch.save(model.state_dict(), f"{root_ckpt_dir}/model_{epoch}.pth")
+
+
+
+# import torch
+# import torch.nn as nn
+# import torch.nn.functional as F
+# import torch.optim as optim
+# from torch_geometric.data import Data, Batch
+# from torch.utils.data import Dataset, DataLoader
+# from tqdm import tqdm, trange
+# from eval.load_eval import evaluation
+# from util.setting import log
+# from nets.load_net import gnn_model
+# from sklearn.metrics import precision_score, recall_score, f1_score
+
+
+# def transfer_label(label):
+#     if label == 0:
+#         return -1
+#     else:
+#         return 1
+
+
+# def evaluation_gcn(model, dataset, params, net_params):
+#     from torch_geometric.data import DataLoader  # Ensure you import this if not already
+
+#     device = net_params['device']
+#     model.eval()
+
+#     bcb_samples = []
+#     gcj_samples = []
+#     gpt_samples = []
+#     results = []
+
+#     val_dataset = GraphPairDataset(dataset)
+#     val_loader = DataLoader(val_dataset, batch_size=params['batch_size'], shuffle=False, collate_fn=collate_fn)
+
+#     with torch.no_grad():
+#         for batch_idx, (batch1, batch2, labels) in enumerate(tqdm(val_loader, desc="Evaluating")):
+#             batch1 = batch1.to(device)
+#             batch2 = batch2.to(device)
+
+#             predictions = model([
+#                 batch1.x, batch2.x,
+#                 batch1.edge_index, batch2.edge_index,
+#                 batch1.edge_attr, batch2.edge_attr,
+#                 batch1.batch, batch2.batch
+#             ])
+#             predictions = torch.argmax(predictions, dim=1)
+
+#             predictions = predictions.cpu().numpy()
+#             labels = labels.cpu().numpy()
+
+#             for i, (prediction, label) in enumerate(zip(predictions, labels)):
+#                 # results.append(float(predictions[i]))
+
+#                 # if prediction > 0.5:
+#                 #     prediction = 1
+#                 # else:
+#                 #     prediction = 0
+
+#                 # if int(data.dataset_label) == 0:
+#                 #     bcb_samples.append((data, prediction))
+#                 # elif int(data.dataset_label) == 1:
+#                 #     gcj_samples.append((data, prediction))
+#                 # elif int(data.dataset_label) == 2:
+#                 #     gpt_samples.append((data, prediction))
+#                 bcb_samples.append((label, prediction))
+
+#     samples, predicted_labels = zip(*bcb_samples)
+#     precision = precision_score(samples, predicted_labels, average='binary')
+#     recall = recall_score(samples, predicted_labels, average='binary')
+#     f1 = f1_score(samples, predicted_labels, average='binary')
+#     log.info(f"Precision: {precision}, Recall: {recall}, F1: {f1}")
+        
+
+
+
+
+
+# class GraphPairDataset(Dataset):
+#     def __init__(self, dataset):
+#         self.dataset = dataset
+
+#     def __len__(self):
+#         return len(self.dataset)
+
+#     def __getitem__(self, idx):
+#         data = self.dataset[idx]
+#         data1 = Data(x=torch.tensor(data.x1, dtype=torch.long),
+#                      edge_index=torch.tensor(data.edge_index_1, dtype=torch.long),
+#                      edge_attr=torch.tensor(data.edge_attr_1, dtype=torch.long))
+#         data2 = Data(x=torch.tensor(data.x2, dtype=torch.long),
+#                      edge_index=torch.tensor(data.edge_index_2, dtype=torch.long),
+#                      edge_attr=torch.tensor(data.edge_attr_2, dtype=torch.long))
+#         # label = transfer_label(data.clone_label)
+#         label = torch.tensor(data.clone_label, dtype=torch.long)
+#         return data1, data2, label
+
+
+# def collate_fn(batch):
+#     data1_list, data2_list, labels = zip(*batch)
+#     batch1 = Batch.from_data_list(data1_list)
+#     batch2 = Batch.from_data_list(data2_list)
+#     labels = torch.stack(labels)
+#     return batch1, batch2, labels
+
+
+# def train_gcn(MODEL_NAME, dataset, params, net_params, dirs):
+#     root_log_dir, root_ckpt_dir, write_file_name, write_config_file = dirs
+
+#     vocablen, trainset, valset, testset = dataset.vocab_length, dataset.train_data, dataset.val_data, dataset.test_data
+#     device = net_params['device']
+#     net_params['vocablen'] = vocablen
+#     log.info(f"Vocab length: {vocablen}")
+#     log.info(f"Trainset length: {len(trainset)}")
+#     log.info(f"Valset length: {len(valset)}")
+#     log.info(f"Testset length: {len(testset)}")
+
+#     model = gnn_model(MODEL_NAME, net_params)
+#     model.to(device)
+
+#     optimizer = optim.Adam(model.parameters(), lr=params['init_lr'], weight_decay=params['weight_decay'])
+#     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=params['lr_reduce_factor'],
+#                                                      patience=params['lr_schedule_patience'], verbose=True)
+
+#     criterion2 = F.nll_loss
+
+#     train_dataset = GraphPairDataset(trainset)
+#     train_loader = DataLoader(train_dataset, batch_size=params['batch_size'], shuffle=True, collate_fn=collate_fn)
+
+#     epochs = trange(params['epochs'], leave=True, desc="Epoch")
+
+
+#     for epoch in epochs:
+#         model.train()
+#         total_loss = 0.0
+#         sample_count = 0
+
+#         for batch1, batch2, labels in tqdm(train_loader, desc="Batches"):
+#             batch1, batch2, labels = batch1.to(device), batch2.to(device), labels.to(device)
+
+#             optimizer.zero_grad()
+#             prediction = model([batch1.x, batch2.x,
+#                                 batch1.edge_index, batch2.edge_index,
+#                                 batch1.edge_attr, batch2.edge_attr,
+#                                 batch1.batch, batch2.batch])
+#             loss = criterion2(prediction, labels)
+#             loss.backward(retain_graph=True)
+#             optimizer.step()
+
+#             total_loss += loss.item() * labels.size(0)
+#             sample_count += labels.size(0)
+#             avg_loss = total_loss / sample_count
+#             epochs.set_description("Epoch (Loss=%g)" % round(avg_loss, 5))
+
+#         # Validation
+#         log.info(f"Validating model at epoch {epoch}")
+#         model.eval()
+#         # val_dataset = GraphPairDataset(valset)
+#         # val_loader = DataLoader(val_dataset, batch_size=params['batch_size'], shuffle=False, collate_fn=collate_fn)
+#         # val_loss = 0.0
+
+#         # with torch.no_grad():
+#         #     for batch1, batch2, labels in val_loader:
+#         #         batch1, batch2, labels = batch1.to(device), batch2.to(device), labels.to(device)
+#         #         prediction = model([batch1.x, batch2.x,
+#         #                             batch1.edge_index, batch2.edge_index,
+#         #                             batch1.edge_attr, batch2.edge_attr,
+#         #                             batch1.batch, batch2.batch])
+#         #         val_loss += criterion2(prediction, labels).item() * labels.size(0)
+
+#         # val_loss /= len(valset)
+#         # scheduler.step(val_loss)
+#         # log.info(f"Epoch {epoch}, Validation Loss: {val_loss}, Learning Rate: {optimizer.param_groups[0]['lr']}")
+
+#         if epoch % params['eval_epoch_interval'] == 0:
+#             log.info(f"Start evaluation on testset in epoch: {epoch}")
+#             evaluation_gcn(model, testset, params, net_params)
+
+#         if epoch % params['save_epoch_interval'] == 0:
+#             log.info(f"Saving model in epoch: {epoch}")
+#             torch.save(model.state_dict(), f"{root_ckpt_dir}/model_{epoch}.pth")
