@@ -87,3 +87,19 @@ sh run_gmn.sh
 ```
 
 After running, the experiment result can be found under the folod of [`run`](run) directory.
+
+
+## 📖 Citation
+
+If you find this repository helpful for your research or project, please consider citing our paper:
+
+```bibtex
+@misc{zhang2025astenhancedastoverloadedsurprisingimpact,
+      title={AST-Enhanced or AST-Overloaded? The Surprising Impact of Hybrid Graph Representations on Code Clone Detection}, 
+      author={Zixian Zhang and Takfarinas Saber},
+      year={2025},
+      eprint={2506.14470},
+      archivePrefix={arXiv},
+      primaryClass={cs.AI},
+      url={https://arxiv.org/abs/2506.14470}, 
+}
