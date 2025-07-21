@@ -1,105 +1,179 @@
-# **Experimental Platform for Paper:**
-
-## *"AST-Enhanced or AST-Overloaded? The Surprising Impact of Hybrid Graph Representations on Code Clone Detection"*
+# 🔬 Experimental Platform for the Paper  
+### **"AST-Enhanced or AST-Overloaded? The Surprising Impact of Hybrid Graph Representations on Code Clone Detection"**  
+**Authors**: Zixian Zhang and Takfarinas Saber  
+**arXiv**: [https://arxiv.org/abs/2506.14470](https://arxiv.org/abs/2506.14470)
 
 ---
 
-## **Dataset**
+## 📁 Dataset Description
 
-The dataset includes a `clone_label.txt` file structured as follows, with columns separated by commas:
+The dataset is formatted as a CSV-like file (`clone_label.txt`) with the following structure:
 
+| Column | Name              | Description                                                                 |
+|--------|-------------------|-----------------------------------------------------------------------------|
+| 1      | `code_file_1`     | Path to the first code snippet                                              |
+| 2      | `code_file_2`     | Path to the second code snippet                                             |
+| 3      | `clone_label`     | `0`: Non-clone, `1`: Clone                                                  |
+| 4      | `split_label`     | `0`: Train, `1`: Test, `2`: Validation                                      |
+| 5      | `dataset_label`   | `0`: BCB, `1`: GCJ, `2`: GPTCloneBench                                      |
+| 6      | `clone_type`      | `0`: None, `1`: T1, `2`: T2, `3`: VST3, `4`: ST3, `5`: MT3, `6`: T4         |
+| 7      | `similarity_score`| Numeric similarity score between code snippets                              |
 
-| Column Index    | Column 1      | Column 2      | Column 3                   | Column 4                               | Column 5                               | Column 6                                                            | Column 7           |
-| --------------- | ------------- | ------------- | -------------------------- | -------------------------------------- | -------------------------------------- | ------------------------------------------------------------------- | ------------------ |
-| **Field**       | `code_file_1` | `code_file_2` | `clone_label`              | `split_label`                          | `dataset_label`                        | `clone_type`                                                        | `similarity_score` |
-| **Description** | File 1        | File 2        | `0`: Non-clone, `1`: Clone | `0`: Train, `1`: Test, `2`: Validation | `0`: BCB, `1`: GCJ, `2`: GPTCloneBench | `0`: None, `1`: T1, `2`: T2, `3`: VST3, `4`: ST3, `5`: MT3, `6`: T4 | Similarity score   |
+### 📦 Dataset Sources
 
-### **Dataset Details**
+- **BCB Dataset**:  
+  Sampled and merged with BigCloneBenchEval. Only pairs available in BigCloneBenchEval are retained to ensure clone type and similarity label availability.
 
-1. **BCB Dataset**
+- **GCJ Dataset**:  
+  Preprocessed Google Code Jam dataset. All `import` and `package` statements are removed to ensure consistency with other datasets.
 
-   - We utilize a sampled dataset from `()` and merge it with BigCloneBenchEval.
-   - The merging rule retains code pairs present in BigCloneBenchEval, ensuring clone type and similarity score availability.
-2. **GCJ Dataset**
+- **GPTCloneBench**:  
+  Java-based dataset derived from SemanticCloneBench.  
+  - Positive samples = semantic clones  
+  - Negative samples = syntactic clones  
+  - **Used for testing only**, due to lack of non-clone (false) pairs.
 
-   - The dataset is sourced from `()`.
-   - To ensure fair comparison, we remove all import and package statements, maintaining a consistent structure with BCB and GPTCloneBench.
-3. **GPTCloneBench**
+📌 **Important:**  
+Current implementation supports **only BCB**.  
 
-   - This dataset, provided by `()`, focuses on Java code.
-   - It is derived from SemanticCloneBench, where:
-     - False samples are syntactic clone pairs.
-     - True samples are semantic clone pairs.
-   - Since it lacks false clone pairs, we use it **only for testing**, categorizing them into different clone types.
+📥 **Download the dataset here**:  
+[https://figshare.com/s/a7517be0234769b2fa5b](https://figshare.com/s/a7517be0234769b2fa5b)
 
-🚨 **Note:** The current experiments are implemented **only on the BCB dataset**. Dowloading dataset from [here](https://figshare.com/s/a7517be0234769b2fa5b).
-📦 **Before running experiments, unzip** `data_java.zip`, following:
+### 📂 Setup the Dataset
 
 ```bash
-mkdir /data/data_source
+mkdir -p /data/data_source
 cd data
 mv data_java.zip /data/data_source
+cd /data/data_source
 unzip data_java.zip
 ```
 
 ---
 
-## **Installation**
+## 💻 Requirements
 
-Follow the instructions in [installation guide](installization.md).
+### Software & Hardware
+
+- OS: Linux (Ubuntu 20.04 recommended)
+- Python: 3.8+
+- Conda
+- NVIDIA Driver Version: **545.29.06**
+- CUDA Version: **12.3**
 
 ---
 
-## **Running Experiments**
+## ⚙️ Installation
 
-All scripts are located in the [`run`](run) directory.
+### Step 1: Create Environment
 
-### **Reproduce Experiments**
+```bash
+conda env create -f environment.yml
+conda activate codeclone
+```
 
-Run the following scripts to replicate results for different models:
+### Step 2: Install PyTorch 2.3.1
 
-#### **GAT**
+Follow the instructions from [PyTorch Previous Versions](https://pytorch.org/get-started/previous-versions/).
+
+### Step 3: Install PyTorch Geometric (CUDA 12.1, Torch 2.3.0)
+
+```bash
+wget https://data.pyg.org/whl/torch-2.3.0%2Bcu121/pyg_lib-0.4.0%2Bpt23cu121-cp38-cp38-linux_x86_64.whl
+wget https://data.pyg.org/whl/torch-2.3.0%2Bcu121/torch_scatter-2.1.2%2Bpt23cu121-cp38-cp38-linux_x86_64.whl
+wget https://data.pyg.org/whl/torch-2.3.0%2Bcu121/torch_sparse-0.6.18%2Bpt23cu121-cp38-cp38-linux_x86_64.whl
+wget https://data.pyg.org/whl/torch-2.3.0%2Bcu121/torch_spline_conv-1.2.2%2Bpt23cu121-cp38-cp38-linux_x86_64.whl
+
+pip3 install pyg_lib-0.4.0+pt23cu121-cp38-cp38-linux_x86_64.whl 
+pip3 install torch_scatter-2.1.2+pt23cu121-cp38-cp38-linux_x86_64.whl 
+pip3 install torch_sparse-0.6.18+pt23cu121-cp38-cp38-linux_x86_64.whl 
+pip3 install torch_spline_conv-1.2.2+pt23cu121-cp38-cp38-linux_x86_64.whl  
+pip3 install torch_geometric
+```
+
+### ✅ Test Installation
+
+To confirm the installation works, run:
 
 ```bash
 cd run
 sh run_gat.sh
 ```
 
-#### **GMN**
+✅ Expected Output (shortened):
 
-```bash
-cd run
-sh run_gmn.sh
+```
+Model: GAT
+Test Accuracy: 0.85
+Clone Type Detection Accuracy: ...
 ```
 
-#### **GGNN**
+This confirms that the code runs correctly and produces meaningful results.
 
-```bash
-cd run
-sh run_ggnn.sh
-```
+### 🧪 Tested Configuration
 
-#### **GMN**
+- OS: Ubuntu 20.04  
+- GPU: NVIDIA RTX 3090  
+- CUDA: 12.3  
+- PyTorch: 2.3.1  
+- Python: 3.8.18  
+- torch-geometric: 2.5.0  
 
-```bash
-cd run
-sh run_gmn.sh
-```
+---
 
-After running, the experiment result can be found under the folod of [`run`](run) directory.
+## ▶️ Running the Experiments
 
+All execution scripts are located in the [`run`](./run) directory.
 
-## 📖 Citation
+### 🔁 Reproduce Results
 
-If you find this repository helpful for your research or project, please consider citing our paper:
+Each script runs a specific model:
+
+- **GAT**:
+  ```bash
+  cd run
+  sh run_gat.sh
+  ```
+
+- **GMN**:
+  ```bash
+  cd run
+  sh run_gmn.sh
+  ```
+
+- **GGNN**:
+  ```bash
+  cd run
+  sh run_ggnn.sh
+  ```
+
+📂 Output results will be stored in the `run/` directory.
+
+---
+
+## 📑 Artifact Contents
+
+| Directory/File       | Description                                      |
+|----------------------|--------------------------------------------------|
+| `run/`               | Shell scripts to reproduce experiments           |
+| `model/`             | Model implementation files (GAT, GGNN, GMN, etc.)|
+| `data/`              | Contains `data_java.zip` and extraction script   |
+| `clone_label.txt`    | Annotation file with clone labels and splits     |
+| `installization.md`  | Environment setup instructions (also in README)  |
+| `environment.yml`    | Conda environment definition                     |
+
+---
+
+## 📜 Citation
 
 ```bibtex
 @misc{zhang2025astenhancedastoverloadedsurprisingimpact,
-      title={AST-Enhanced or AST-Overloaded? The Surprising Impact of Hybrid Graph Representations on Code Clone Detection}, 
-      author={Zixian Zhang and Takfarinas Saber},
-      year={2025},
-      eprint={2506.14470},
-      archivePrefix={arXiv},
-      primaryClass={cs.AI},
-      url={https://arxiv.org/abs/2506.14470}, 
+  title     = {AST-Enhanced or AST-Overloaded? The Surprising Impact of Hybrid Graph Representations on Code Clone Detection},
+  author    = {Zixian Zhang and Takfarinas Saber},
+  year      = {2025},
+  eprint    = {2506.14470},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.AI},
+  url       = {https://arxiv.org/abs/2506.14470}
 }
+```
