@@ -177,3 +177,9 @@ Each script runs a specific model:
   url       = {https://arxiv.org/abs/2506.14470}
 }
 ```
+
+
+## 🔗 Zenodo DOI
+
+This artifact is archived at Zenodo:  
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.16266404.svg)](https://doi.org/10.5281/zenodo.16266404)
