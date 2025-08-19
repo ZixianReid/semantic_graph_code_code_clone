@@ -1,6 +1,6 @@
 # Define the paths as variables
-PYTHON_EXEC=/home/zixian/.conda/envs/semantic_graph_code_clone/bin/python
-PROJECT_DIR=/home/zixian/PycharmProjects/semantic_graph_code_code_clone
+PYTHON_EXEC=$(which python)
+PROJECT_DIR=$(cd "$(dirname "$0")/.." && pwd)
 SCRIPT=$PROJECT_DIR/main.py
 CONFIG_DIR=$PROJECT_DIR/configs/benchmark_without_value_GGNN/BCB
 

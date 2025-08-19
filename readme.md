@@ -7,7 +7,11 @@
 
 ## 📁 Dataset Description
 
-The dataset is formatted as a CSV-like file (`clone_label.txt`) with the following structure:
+📥 **Download the dataset here**:  
+[https://figshare.com/s/a7517be0234769b2fa5b](https://figshare.com/s/a7517be0234769b2fa5b)
+-Due to the large size of the dataset, it cannot be uploaded directly to GitHub; therefore, it is hosted externally.
+
+The dataset label file is formatted as a CSV-like file (`clone_label.txt` you can find in the top folder in this dataset)  with the following structure:
 
 | Column | Name              | Description                                                                 |
 |--------|-------------------|-----------------------------------------------------------------------------|
@@ -36,8 +40,7 @@ The dataset is formatted as a CSV-like file (`clone_label.txt`) with the followi
 📌 **Important:**  
 Current implementation supports **only BCB**.  
 
-📥 **Download the dataset here**:  
-[https://figshare.com/s/a7517be0234769b2fa5b](https://figshare.com/s/a7517be0234769b2fa5b)
+
 
 ### 📂 Setup the Dataset
 
@@ -61,54 +64,14 @@ unzip data_java.zip
 - NVIDIA Driver Version: **545.29.06**
 - CUDA Version: **12.3**
 
----
+
 
 ## ⚙️ Installation
 
-### Step 1: Create Environment
-
-```bash
-conda env create -f environment.yml
-conda activate codeclone
-```
-
-### Step 2: Install PyTorch 2.3.1
-
-Follow the instructions from [PyTorch Previous Versions](https://pytorch.org/get-started/previous-versions/).
-
-### Step 3: Install PyTorch Geometric (CUDA 12.1, Torch 2.3.0)
-
-```bash
-wget https://data.pyg.org/whl/torch-2.3.0%2Bcu121/pyg_lib-0.4.0%2Bpt23cu121-cp38-cp38-linux_x86_64.whl
-wget https://data.pyg.org/whl/torch-2.3.0%2Bcu121/torch_scatter-2.1.2%2Bpt23cu121-cp38-cp38-linux_x86_64.whl
-wget https://data.pyg.org/whl/torch-2.3.0%2Bcu121/torch_sparse-0.6.18%2Bpt23cu121-cp38-cp38-linux_x86_64.whl
-wget https://data.pyg.org/whl/torch-2.3.0%2Bcu121/torch_spline_conv-1.2.2%2Bpt23cu121-cp38-cp38-linux_x86_64.whl
-
-pip3 install pyg_lib-0.4.0+pt23cu121-cp38-cp38-linux_x86_64.whl 
-pip3 install torch_scatter-2.1.2+pt23cu121-cp38-cp38-linux_x86_64.whl 
-pip3 install torch_sparse-0.6.18+pt23cu121-cp38-cp38-linux_x86_64.whl 
-pip3 install torch_spline_conv-1.2.2+pt23cu121-cp38-cp38-linux_x86_64.whl  
-pip3 install torch_geometric
-```
-
-### ✅ Test Installation
-
-To confirm the installation works, run:
-
 ```bash
 cd run
-sh run_gat.sh
+sh install.sh
 ```
-
-✅ Expected Output (shortened):
-
-```
-Model: GAT
-Test Accuracy: 0.85
-Clone Type Detection Accuracy: ...
-```
-
-This confirms that the code runs correctly and produces meaningful results.
 
 ### 🧪 Tested Configuration
 
@@ -147,9 +110,45 @@ Each script runs a specific model:
   sh run_ggnn.sh
   ```
 
-📂 Output results will be stored in the `run/` directory.
+- **GCN**:
+  ```bash
+  cd run
+  sh run_gcn.sh
+  ```
+
+### 📂 Output Results
+
+- All output results are stored under the [`run`](./run) directory.  
+- For **each combination of code representations and model**, a dedicated folder will be created automatically.  
+  - Example: `run/out_gat/AST_CFG_DFG_FA_GAT_BCB/`  
+- Inside each folder you will find:
+  - `logs/clone_bcb_2.txt` → the main evaluation log file  
+  - `checkpoints/` → saved model weights  
+  - `results/` → processed result files  
+
+
 
 ---
+
+#### 📑 Log Format
+
+The output log (`clone_bcb_2.txt`) records timestamps, evaluation steps, and metrics.  
+A typical evaluation entry looks like:
+
+```
+2025-01-07 00:20:28,041 |   INFO | Evaluating BCB data-----------------------------------------------------
+2025-01-07 00:20:28,041 |   INFO | Evaluating General Precision, Recall and F1
+2025-01-07 00:20:28,567 |   INFO | Precision: 0.9733883918329892, Recall: 0.9303634403493705, F1: 0.9513897323305461
+```
+
+#### 📊 Result Graphs
+
+- All result graphs are created by **aggregating results from all combinations of representations and models**.  
+- We record all generated results in **Table 2**.  
+- Based on the results summarized in Table 2, we generated the visual illustrations, including **Figure 4** and **Figure 5**. 
+
+
+
 
 ## 📑 Artifact Contents
 
