@@ -181,4 +181,4 @@ A typical evaluation entry looks like:
 ## 🔗 Zenodo DOI
 
 This artifact is archived at Zenodo:  
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.16266404.svg)](https://doi.org/10.5281/zenodo.16266404)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.16266404.svg)](https://doi.org/10.5281/zenodo.16905268)
